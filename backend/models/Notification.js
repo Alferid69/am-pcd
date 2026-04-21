@@ -10,7 +10,7 @@ const notificationSchema = new mongoose.Schema(
     // The generalized role of the users who should see this alert
     targetRole: {
       type: String,
-      enum: ["Retailer", "Woreda", "Zone", "Bureau", "Admin"],
+      enum: ["retailer", "woreda", "zone", "bureau", "admin"],
       required: true,
     },
     // (Optional) You can bind this to the specific ObjectId of the Woreda, Zone, or Retailer

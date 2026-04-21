@@ -1,21 +1,74 @@
 const StockRequest = require("../models/StockRequest");
+const RetailerCooperative = require("../models/RetailerCooperative");
 const factory = require("./handlerFactory");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 
 const popOptions = [
   { path: 'retailerCooperative', select: 'name woredaOffice' },
-  { path: 'requestedItems.commodity', select: 'name unit price' }
+  { path: 'requestedItems.commodity', select: 'name baseUnit bulkUnit conversionRate' }
 ];
 
-exports.createStockRequest = factory.createOne(StockRequest);
-exports.getAllStockRequests = factory.getAll(StockRequest, popOptions);
+exports.createStockRequest = catchAsync(async (req, res, next) => {
+  // Automatically bind the request to the retailer's workplace, ignoring malicious inputs
+  if (req.user.role === 'retailer') {
+    req.body.retailerCooperative = req.user.worksAt;
+  }
+  
+  // Create an automatic initial timeline entry
+  req.body.timeline = [{
+    actor: req.user._id,
+    role: req.user.role,
+    action: "SUBMITTED",
+    remarks: "Request initiated"
+  }];
+
+  const newDoc = await StockRequest.create(req.body);
+  
+  res.status(201).json({
+    status: "success",
+    data: newDoc,
+  });
+});
+
+exports.getAllStockRequests = catchAsync(async (req, res, next) => {
+  let filter = {};
+
+  // Custom Data Fetching Silos Based on Role
+  if (req.user.role === 'retailer') {
+    filter.retailerCooperative = req.user.worksAt;
+  } 
+  else if (req.user.role === 'woreda') {
+    // Woredas can only see requests from Retailer Cooperatives within their own jurisdiction
+    const retailers = await RetailerCooperative.find({ woredaOffice: req.user.worksAt }).select('_id');
+    const retailerIds = retailers.map(r => r._id);
+    filter.retailerCooperative = { $in: retailerIds };
+  } 
+  else if (req.user.role === 'zone') {
+    // Zones shouldn't see un-processed Woreda requests
+    filter.status = { $ne: "PENDING_WOREDA" };
+  } 
+  else if (req.user.role === 'bureau') {
+    // Bureau only sees things that have survived up to its desk (or history)
+    filter.status = { $in: ["PENDING_BUREAU", "APPROVED", "REJECTED", "FULFILLED"] };
+  }
+
+  // Merge the security filter with any query params the frontend sends (like ?status=PENDING_WOREDA)
+  const dbQuery = { ...req.query, ...filter };
+
+  let query = StockRequest.find(dbQuery).populate(popOptions);
+  const docs = await query;
+
+  res.status(200).json({
+    status: "success",
+    length: docs.length,
+    data: docs,
+  });
+});
+
 exports.getStockRequest = factory.getOne(StockRequest, popOptions);
 exports.deleteStockRequest = factory.deleteOne(StockRequest);
 
-// We use a custom update function instead of factory.updateOne
-// because factory.updateOne uses findByIdAndUpdate, which skips .pre('save') hooks.
-// We NEED the .save() method to trigger the Notification generation hook!
 exports.updateStockRequest = catchAsync(async (req, res, next) => {
   const doc = await StockRequest.findById(req.params.id);
 
@@ -23,19 +76,80 @@ exports.updateStockRequest = catchAsync(async (req, res, next) => {
     return next(new AppError("No Stock Request found with that ID", 404));
   }
 
-  // Update main status if provided
-  if (req.body.status) doc.status = req.body.status;
-  
-  // Update requested items if modified
-  if (req.body.requestedItems) doc.requestedItems = req.body.requestedItems;
-
-  // Add highly detailed timeline tracking if provided by the incoming request
-  if (req.body.newTimelineEntry) {
-    doc.timeline.push(req.body.newTimelineEntry);
+  // --- AUTOMATED STATUS TRANSITION ---
+  // If the frontend sends an action, the backend automatically transitions the underlying document status
+  if (req.body.action) {
+    const action = req.body.action;
+    
+    // Ignore any malicious raw 'status' fields the frontend might have sent
+    delete req.body.status; 
+    
+    if (action === "REJECTED") {
+      req.body.status = "REJECTED";
+    } else if (action === "APPROVED") {
+      if (req.user.role === 'woreda') req.body.status = "PENDING_ZONE";
+      else if (req.user.role === 'zone') req.body.status = "PENDING_BUREAU";
+      else if (req.user.role === 'bureau') req.body.status = "APPROVED";
+    }
   }
 
-  // Using .save() triggers Mongoose pre('save') middleware, which evaluates
-  // status changes and creates the appropriate Notification document.
+  // --- STRICT ROLE-BASED STATE VALIDATION ---
+  if (req.user.role === 'retailer') {
+    // Retailers can edit their request quantities, but ONLY while it's still at the Woreda level
+    if (doc.status !== 'PENDING_WOREDA') {
+       return next(new AppError("You can only modify requests that are currently pending at the Woreda.", 403));
+    }
+    // Retailers cannot push the status forward themselves
+    if (req.body.status && req.body.status !== 'PENDING_WOREDA') {
+       return next(new AppError("Retailers cannot approve or authorize their own requests.", 403));
+    }
+  }
+
+  if (req.user.role === 'woreda') {
+    // Validating jurisdiction!
+    const retailer = await RetailerCooperative.findById(doc.retailerCooperative);
+    if (!retailer || retailer.woredaOffice.toString() !== req.user.worksAt.toString()) {
+       return next(new AppError("Forbidden. This request does not belong to a cooperative in your Woreda.", 403));
+    }
+    const allowedStatuses = ["PENDING_WOREDA", "PENDING_ZONE", "REJECTED"];
+    if (req.body.status && !allowedStatuses.includes(req.body.status)) {
+       return next(new AppError("Woreda users can only transition statuses to PENDING_ZONE or REJECTED.", 403));
+    }
+  }
+
+  if (req.user.role === 'zone') {
+    const allowedStatuses = ["PENDING_ZONE", "PENDING_BUREAU", "REJECTED"];
+    if (req.body.status && !allowedStatuses.includes(req.body.status)) {
+       return next(new AppError("Zone users can only transition statuses to PENDING_BUREAU or REJECTED.", 403));
+    }
+    if (doc.status === 'PENDING_WOREDA') {
+       return next(new AppError("Forbidden. This request is still at the Woreda level.", 403));
+    }
+  }
+
+  if (req.user.role === 'bureau') {
+    const allowedStatuses = ["PENDING_BUREAU", "APPROVED", "REJECTED"];
+    if (req.body.status && !allowedStatuses.includes(req.body.status)) {
+       return next(new AppError("Bureau users can only transition statuses to APPROVED or REJECTED.", 403));
+    }
+  }
+
+  // --- UPDATE EXECUTION ---
+
+  if (req.body.status) doc.status = req.body.status;
+  if (req.body.requestedItems) doc.requestedItems = req.body.requestedItems;
+
+  if (req.body.action) {
+    const newTimelineEntry = {
+      actor: req.user._id,
+      role: req.user.role,
+      action: req.body.action,
+      remarks: req.body.remarks || ""
+    };
+    doc.timeline.push(newTimelineEntry);
+  }
+
+  // Triggers Mongoose pre('save') middleware for Notifications
   await doc.save();
 
   res.status(200).json({

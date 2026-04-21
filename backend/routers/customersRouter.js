@@ -14,15 +14,16 @@ const {
 } = require("../controllers/customerController");
 
 const auth = require("../middleware/auth");
+const authController = require("../controllers/authController");
 
-router.post("/", auth, createCustomer);
+router.post("/", auth, authController.restrictTo('woreda', 'admin'), createCustomer);
 router.get("/", auth, getAllCustomers);
 router.get("/:id", auth, getCustomer);
 
 router.get("/fayda/:fayda", auth, getCustomerByFAN);
 
-router.patch("/:id", auth, updateCustomer);
-router.delete("/:id", auth, deleteCustomer);
+router.patch("/:id", auth, authController.restrictTo('woreda', 'admin'), updateCustomer);
+router.delete("/:id", auth, authController.restrictTo('admin'), deleteCustomer);
 
 router.get("/woredaOffice/:woredaOfficeId", auth, getCustomersByWoredaOffice);
 

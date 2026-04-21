@@ -43,14 +43,19 @@ const userSchema = new mongoose.Schema(
     passwordChangedAt: Date,
     role: {
       type: String,
-      enum: ["admin", "user"], // TODO: add more roles
-      default: "user",
+      enum: ["admin", "woreda", "zone", "bureau", "retailer"], // TODO: add more roles
     },
-    worksAt: { type: mongoose.Schema.Types.ObjectId},
+    worksAt: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      required: [
+        function() { return this.role !== "admin"; }, 
+        "Users workplace _id is required"
+      ] 
+    },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 userSchema.pre(/^find/, function () {
@@ -73,7 +78,7 @@ userSchema.pre("save", function () {
 // This function will be available for every doc created using User model
 userSchema.methods.correctPassword = async function (
   candidatePassword,
-  userPassword
+  userPassword,
 ) {
   return await bcrypt.compare(candidatePassword, userPassword);
 };
@@ -82,7 +87,7 @@ userSchema.methods.passwordChangedAfter = function (JWTTimestamp) {
   if (this.passwordChangedAt) {
     const changedTimestamp = parseInt(
       this.passwordChangedAt.getTime() / 1000,
-      10
+      10,
     );
 
     return JWTTimestamp < changedTimestamp;

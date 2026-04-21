@@ -26,6 +26,7 @@ const customerSchema = new mongoose.Schema(
       unique: true,
       index: true,
       required: [true, "FAN field is required"],
+      match: [/^\d{16}$/, "FAN (Fayda number) must be exactly 16 digits"],
     },
     woreda: {
       type: mongoose.Schema.Types.ObjectId,

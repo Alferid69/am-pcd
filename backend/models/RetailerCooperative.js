@@ -21,6 +21,10 @@ const retailerCooperative = new mongoose.Schema(
         quantity: Number,
       },
     ],
+    
+    transactions: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "Transaction" }
+    ]
   },
   {
     timestamps: true,

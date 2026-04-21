@@ -15,6 +15,10 @@ const woredaOfficesRouter = require("./routers/woredaOfficesRouter");
 const retailerCooperativesRouter = require("./routers/retailerCooperativesRouter");
 const stockRequestsRouter = require("./routers/stockRequestsRouter");
 const notificationsRouter = require("./routers/notificationsRouter");
+const allocationsRouter = require("./routers/allocationRouter");
+const transactionsRouter = require("./routers/transactionsRouter");
+
+const AppError = require("./utils/appError");
 
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
@@ -30,11 +34,13 @@ app.use("/api/v1/users", usersRouter);
 app.use("/api/v1/customers", customersRouter);
 app.use("/api/v1/commodities", commoditiesRouter);
 app.use("/api/v1/retailerCooperativesBureaus", retailerCooperativesBureauRouter);
-app.use("/api/v1/zoneTrades", zoneTradeRouter);
+app.use("/api/v1/zoneTradeBureaus", zoneTradeRouter);
 app.use("/api/v1/woredaOffices", woredaOfficesRouter);
 app.use("/api/v1/retailerCooperatives", retailerCooperativesRouter);
 app.use("/api/v1/stockRequests", stockRequestsRouter);
 app.use("/api/v1/notifications", notificationsRouter);
+app.use("/api/v1/allocations", allocationsRouter);
+app.use("/api/v1/transactions", transactionsRouter);
 
 app.all(/.*/, (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));

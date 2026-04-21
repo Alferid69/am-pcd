@@ -14,11 +14,22 @@ const commoditySchema = new mongoose.Schema(
       required: [true, 'Price field is required'],
       min: [0, 'Price must be a non-negative number'],
     },
-    unit: {
+    baseUnit: {
       type: String,
-      required: [true, 'Unit field is required'],
+      required: [true, 'Base Unit field is required (e.g., kg, liter)'],
       trim: true,
       lowercase: true,
+    },
+    bulkUnit: {
+      type: String,
+      required: [true, 'Bulk Unit field is required (e.g., kuntal, jerrycan)'],
+      trim: true,
+      lowercase: true,
+    },
+    conversionRate: {
+      type: Number,
+      required: [true, 'Conversion Rate is required (e.g., 100 for 100kg per kuntal)'],
+      min: [1, 'Conversion Rate must be at least 1'],
     },
   },
   {

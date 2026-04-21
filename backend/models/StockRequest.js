@@ -68,7 +68,7 @@ const stockRequestSchema = new mongoose.Schema(
 );
 
 // Mongoose Document Middleware: Generates a purely visual Notification on Status Change
-stockRequestSchema.pre("save", async function (next) {
+stockRequestSchema.pre("save", async function () {
   // Only trigger this logic if the 'status' field was actually modified during this save
   if (!this.isModified("status")) return next();
 
@@ -79,7 +79,7 @@ stockRequestSchema.pre("save", async function (next) {
   // Evaluate who needs to be alerted based on the new status
   switch (this.status) {
     case "PENDING_WOREDA":
-      targetRole = "Woreda";
+      targetRole = "woreda";
       message = "A new Stock Request is waiting for your approval.";
       // Fetch the RetailerCooperative to find out which specific Woreda it resides in
       const retailer = await mongoose.model("RetailerCooperative").findById(this.retailerCooperative);
@@ -89,25 +89,25 @@ stockRequestSchema.pre("save", async function (next) {
       break;
 
     case "PENDING_ZONE":
-      targetRole = "Zone";
+      targetRole = "zone";
       message = "Woreda has approved a Stock Request. Pending your review.";
       // Single Zone Bureau, targetOfficeId not strictly required
       break;
 
     case "PENDING_BUREAU":
-      targetRole = "Bureau";
+      targetRole = "bureau";
       message = "Zone has approved a Stock Request. Pending final Bureau review.";
       // Single Bureau, targetOfficeId not strictly required
       break;
 
     case "APPROVED":
-      targetRole = "Retailer";
+      targetRole = "retailer";
       message = "Your Stock Request has been finally approved by the Bureau.";
       targetOfficeId = this.retailerCooperative; // Route back to the exact requesting Retailer
       break;
 
     case "REJECTED":
-      targetRole = "Retailer";
+      targetRole = "retailer";
       message = "Your Stock Request was rejected. Please check the request timeline for reasons.";
       targetOfficeId = this.retailerCooperative; // Route back to the exact requesting Retailer
       break;
@@ -129,7 +129,6 @@ stockRequestSchema.pre("save", async function (next) {
     await Notification.create(notificationPayload);
   }
 
-  next();
 });
 
 const StockRequest = mongoose.model("StockRequest", stockRequestSchema);
