@@ -1,6 +1,7 @@
 const express = require("express");
 const morgan = require("morgan");
 const helmet = require("helmet");
+const cors = require("cors");
 
 const app = express();
 
@@ -19,6 +20,11 @@ const allocationsRouter = require("./routers/allocationRouter");
 const transactionsRouter = require("./routers/transactionsRouter");
 
 const AppError = require("./utils/appError");
+
+app.use(cors({
+  origin: "http://localhost:3001",
+  credentials: true,
+}));
 
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
