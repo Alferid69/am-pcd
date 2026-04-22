@@ -11,6 +11,8 @@ const popOptions = [
 
 exports.createStockRequest = catchAsync(async (req, res, next) => {
   // Automatically bind the request to the retailer's workplace, ignoring malicious inputs
+  console.log("Req Body:", req.body);
+  console.log("User Role:", req.user);
   if (req.user.role === 'retailer') {
     req.body.retailerCooperative = req.user.worksAt;
   }
@@ -23,8 +25,12 @@ exports.createStockRequest = catchAsync(async (req, res, next) => {
     remarks: "Request initiated"
   }];
 
+
+
+  console.log("After createStockRequest StockRequest:",req.body)
   const newDoc = await StockRequest.create(req.body);
-  
+  console.log('are we here?????')
+
   res.status(201).json({
     status: "success",
     data: newDoc,

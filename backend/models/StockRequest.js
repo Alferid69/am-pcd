@@ -20,6 +20,10 @@ const stockRequestSchema = new mongoose.Schema(
           required: true,
           min: [1, "Quantity must be at least 1"],
         },
+        unit: {
+          type: String,
+          required: [true, "Unit field is required"],
+        },
       },
     ],
     status: {
@@ -61,6 +65,7 @@ const stockRequestSchema = new mongoose.Schema(
         },
       },
     ],
+    
   },
   {
     timestamps: true,
@@ -70,7 +75,7 @@ const stockRequestSchema = new mongoose.Schema(
 // Mongoose Document Middleware: Generates a purely visual Notification on Status Change
 stockRequestSchema.pre("save", async function () {
   // Only trigger this logic if the 'status' field was actually modified during this save
-  if (!this.isModified("status")) return next();
+  if (!this.isModified("status")) return;
 
   let targetRole;
   let message;

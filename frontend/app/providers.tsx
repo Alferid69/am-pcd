@@ -2,6 +2,8 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React, { useState } from 'react';
+import { ThemeProvider } from 'next-themes';
+import '@/lib/i18n';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   // Create a new QueryClient instance per request/session to avoid cross-request data leakage
@@ -16,8 +18,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   }));
 
   return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+      <QueryClientProvider client={queryClient}>
+        {children}
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }

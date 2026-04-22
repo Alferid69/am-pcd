@@ -1,41 +1,44 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import { login } from "@/api/apiAuth";
 import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import React, { useState, useSyncExternalStore } from "react";
+import { isAxiosError } from "axios";
+import { useTranslation } from "react-i18next";
+import { useTheme } from "next-themes";
 
 export default function LoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const mounted = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
+
+  const { t, i18n } = useTranslation();
+  const { theme, setTheme } = useTheme();
 
   const loginMutation = useMutation({
-    mutationFn: async () => {
-      const res = await fetch("http://localhost:3000/api/v1/users/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ username, password }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Failed to log in");
-      }
-      return data;
-    },
+    mutationFn: () => login({ username, password }),
     onSuccess: (data) => {
       localStorage.setItem("token", data.token);
       localStorage.setItem("userRole", data.data.user.role);
       router.push("/dashboard");
     },
-    onError: (err: any) => {
-      setError(err.message);
+    onError: (err: unknown) => {
+      if (isAxiosError(err)) {
+        setError(
+          err.response?.data?.message || err.message || "Failed to log in",
+        );
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unexpected error occurred");
+      }
     },
   });
 
@@ -46,16 +49,39 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
-      
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-300">
+      {/* Top right controls */}
+      {mounted && (
+        <div className="absolute top-4 right-4 flex gap-4 z-50">
+          <button
+            onClick={() =>
+              i18n.changeLanguage(i18n.language === "en" ? "am" : "en")
+            }
+            className="px-4 py-2 rounded-xl backdrop-blur-md bg-white/10 dark:bg-black/20 border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-800 dark:text-white hover:bg-white/20 transition-all shadow-sm"
+          >
+            {i18n.language === "en" ? "አማ" : "EN"}
+          </button>
+          <button
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="px-4 py-2 rounded-xl backdrop-blur-md bg-white/10 dark:bg-black/20 border border-slate-200 dark:border-white/10 text-sm font-semibold text-slate-800 dark:text-white hover:bg-white/20 transition-all shadow-sm flex items-center gap-2"
+          >
+            {theme === "dark" ? t("themeLight") : t("themeDark")}
+          </button>
+        </div>
+      )}
+
       {/* Decorative Background Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-indigo-500/20 blur-[120px] rounded-full pointer-events-none" />
 
       {/* Glassmorphic Card */}
-      <div className="relative z-10 w-full max-w-md backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-8 shadow-2xl">
+      <div className="relative z-10 w-full max-w-md backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-8 shadow-2xl transition-all">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">AM-PCD</h1>
-          <p className="text-slate-400 text-sm">Supply Chain Management System</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">
+            {t("loginTitle")}
+          </h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm">
+            {t("loginSubtitle")}
+          </p>
         </div>
 
         {error && (
@@ -66,8 +92,11 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-slate-300" htmlFor="username">
-              Username
+            <label
+              className="text-sm font-medium text-slate-700 dark:text-slate-300"
+              htmlFor="username"
+            >
+              {t("usernameLabel")}
             </label>
             <input
               id="username"
@@ -75,14 +104,17 @@ export default function LoginPage() {
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
-              placeholder="Enter your username"
+              className="w-full bg-white dark:bg-slate-900/50 border border-slate-300 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all shadow-sm"
+              placeholder={t("usernamePlaceholder")}
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-slate-300" htmlFor="password">
-              Password
+            <label
+              className="text-sm font-medium text-slate-700 dark:text-slate-300"
+              htmlFor="password"
+            >
+              {t("passwordLabel")}
             </label>
             <input
               id="password"
@@ -90,8 +122,8 @@ export default function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
-              placeholder="••••••••"
+              className="w-full bg-white dark:bg-slate-900/50 border border-slate-300 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all shadow-sm"
+              placeholder={t("passwordPlaceholder")}
             />
           </div>
 
@@ -99,21 +131,38 @@ export default function LoginPage() {
             type="submit"
             disabled={loginMutation.isPending}
             className={`w-full py-3.5 px-4 rounded-xl font-medium text-white shadow-lg transition-all 
-              ${loginMutation.isPending 
-                ? "bg-indigo-600/50 cursor-not-allowed" 
-                : "bg-gradient-to-r from-indigo-500 to-purple-600 hover:scale-[1.02] hover:shadow-indigo-500/25 active:scale-[0.98]"
+              ${
+                loginMutation.isPending
+                  ? "bg-indigo-600/50 cursor-not-allowed"
+                  : "bg-linear-to-r from-indigo-500 to-purple-600 hover:scale-[1.02] hover:shadow-indigo-500/25 active:scale-[0.98]"
               }`}
           >
             {loginMutation.isPending ? (
               <span className="flex items-center justify-center gap-2">
-                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg
+                  className="animate-spin h-5 w-5 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
                 </svg>
-                Authenticating...
+                {t("authenticating")}
               </span>
             ) : (
-              "Sign In"
+              t("signInButton")
             )}
           </button>
         </form>
