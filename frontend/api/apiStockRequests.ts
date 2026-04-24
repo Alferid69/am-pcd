@@ -22,3 +22,11 @@ export const updateStockRequestAction = async (
   const response = await apiClient.patch(`/stockRequests/${id}`, payload);
   return response.data.data;
 };
+
+export const updateRequestItems = async (
+  id: string,
+  payload: { requestedItems: { commodity: string; quantity: number; unit: string }[] }
+) => {
+  const response = await apiClient.patch(`/stockRequests/${id}`, payload);
+  return response.data.data;
+};

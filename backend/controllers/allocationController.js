@@ -6,22 +6,36 @@ const AppError = require("../utils/appError");
 
 // Setup query population
 const popOptions = [
-  { path: 'retailerCooperative', select: 'name woredaOffice' },
-  { path: 'allocatedItems.commodity', select: 'name unit' }
+  { 
+    path: "retailerCooperative", 
+    select: "name woredaOffice",
+    populate: { path: "woredaOffice", select: "name" }
+  },
+  { path: "allocatedItems.commodity", select: "name baseUnit bulkUnit" },
 ];
 
-exports.createAllocation = factory.createOne(Allocation);
+exports.createAllocation = catchAsync(async (req, res, next) => {
+  // Automatically record which Bureau admin created the allocation
+  req.body.allocatedBy = req.user._id;
+  const doc = await Allocation.create(req.body);
+
+  res.status(201).json({
+    status: "success",
+    data: doc,
+  });
+});
 
 exports.getAllAllocations = catchAsync(async (req, res, next) => {
   let filter = {};
 
-  if (req.user.role === 'woreda') {
+  if (req.user.role === "woreda") {
     // Woredas can only see allocations meant for Retailer Cooperatives in their jurisdiction
-    const retailers = await RetailerCooperative.find({ woredaOffice: req.user.worksAt }).select('_id');
-    const retailerIds = retailers.map(r => r._id);
+    const retailers = await RetailerCooperative.find({
+      woredaOffice: req.user.worksAt,
+    }).select("_id");
+    const retailerIds = retailers.map((r) => r._id);
     filter.retailerCooperative = { $in: retailerIds };
-  } 
-  else if (req.user.role === 'retailer') {
+  } else if (req.user.role === "retailer") {
     // Just in case a retailer fetches them for read-only tracking
     filter.retailerCooperative = req.user.worksAt;
   }
@@ -51,24 +65,44 @@ exports.updateAllocation = catchAsync(async (req, res, next) => {
 
   // Prevent modifications if already delivered
   if (doc.status === "DELIVERED") {
-    return next(new AppError("This allocation has already been finalized and marked as DELIVERED. It cannot be modified further.", 400));
+    return next(
+      new AppError(
+        "This allocation has already been finalized and marked as DELIVERED. It cannot be modified further.",
+        400,
+      ),
+    );
   }
 
-  if (req.user.role === 'woreda') {
+  if (req.user.role === "woreda") {
     // Validate jurisdiction
-    const retailer = await RetailerCooperative.findById(doc.retailerCooperative);
-    if (!retailer || retailer.woredaOffice.toString() !== req.user.worksAt.toString()) {
-       return next(new AppError("Forbidden. This allocation goes to a cooperative outside your Woreda.", 403));
+    const retailer = await RetailerCooperative.findById(
+      doc.retailerCooperative,
+    );
+    if (
+      !retailer ||
+      retailer.woredaOffice.toString() !== req.user.worksAt.toString()
+    ) {
+      return next(
+        new AppError(
+          "Forbidden. This allocation goes to a cooperative outside your Woreda.",
+          403,
+        ),
+      );
     }
-    
+
     // Woredas are ONLY allowed to mark it as Delivered
     if (req.body.status && req.body.status !== "DELIVERED") {
-       return next(new AppError("Woreda users can only mark allocations as DELIVERED.", 403));
+      return next(
+        new AppError(
+          "Woreda users can only mark allocations as DELIVERED.",
+          403,
+        ),
+      );
     }
-    
+
     // Completely prevent Woredas from modifying the allocatedItems maliciously
     if (req.body.allocatedItems) {
-       delete req.body.allocatedItems;
+      delete req.body.allocatedItems;
     }
   }
 

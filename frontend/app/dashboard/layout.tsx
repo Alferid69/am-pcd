@@ -84,8 +84,6 @@ export default function DashboardLayout({
     setMobileSidebarOpen(false);
   };
 
-  // Don't render mismatch state until mounted
-  if (!mounted) return null;
 
   return (
     <div className="min-h-screen bg-(--bpds-surface) text-(--bpds-on-surface)">
@@ -117,7 +115,7 @@ export default function DashboardLayout({
             roleLabel={t(roleLabels[userRole] ?? "dashboard.roles.admin")}
             notificationCount={notificationCount}
             languageLabel={i18n.language === "en" ? "አማ" : "EN"}
-            isDarkTheme={theme === "dark"}
+            isDarkTheme={mounted ? theme === "dark" : false}
             onOpenMenu={() => setMobileSidebarOpen(true)}
             onToggleLanguage={() =>
               i18n.changeLanguage(i18n.language === "en" ? "am" : "en")

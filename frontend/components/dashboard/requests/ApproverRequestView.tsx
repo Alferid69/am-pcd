@@ -132,7 +132,7 @@ const RequestTable = ({
                 {req.retailerCooperative?.name}
               </div>
               <div className="text-xs text-muted-foreground">
-                Woreda: {req.retailerCooperative?.woredaOffice || "N/A"}
+                Woreda: {req.retailerCooperative?.woredaOffice?.name || "N/A"}
               </div>
             </TableCell>
             <TableCell>

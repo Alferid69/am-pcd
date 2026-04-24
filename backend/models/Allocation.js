@@ -9,7 +9,7 @@ const allocationSchema = new mongoose.Schema(
       required: [true, "An allocation must be tied to a StockRequest"],
       unique: true,
     },
-    // The exact destination 
+    // The exact destination
     retailerCooperative: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "RetailerCooperative",
@@ -18,7 +18,11 @@ const allocationSchema = new mongoose.Schema(
     // The items and quantities actually being shipped out of the warehouse
     allocatedItems: [
       {
-        commodity: { type: mongoose.Schema.Types.ObjectId, ref: "Commodity", required: true },
+        commodity: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Commodity",
+          required: true,
+        },
         quantity: { type: Number, required: true },
       },
     ],
@@ -38,18 +42,37 @@ const allocationSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
+
+// When an allocation is saved, automatically set the StockRequest status to FULFILLED
+allocationSchema.post("save", async function (doc) {
+  const StockRequest = mongoose.model("StockRequest");
+  const stockReq = await StockRequest.findById(doc.stockRequest);
+
+  // Since allocations are 1:1 with StockRequests, we can just idempotently check this
+  if (stockReq && stockReq.status !== "FULFILLED") {
+    stockReq.status = "FULFILLED";
+    stockReq.timeline.push({
+      actor: doc.allocatedBy || null,
+      role: "bureau",
+      action: "ALLOCATED",
+      remarks: "Allocation has been dispatched",
+    });
+    await stockReq.save();
+  }
+});
 
 // Automatic Stock Management Hook
 // When the allocation status changes to DELIVERED, physically add stock to the Retailer Cooperative
 allocationSchema.pre("save", async function () {
   // Only execute this logic if the status JUST changed to DELIVERED
   if (this.isModified("status") && this.status === "DELIVERED") {
-    
     // 1. Fetch the corresponding Retailer Cooperative
     const RetailerCooperative = mongoose.model("RetailerCooperative");
-    const retailer = await RetailerCooperative.findById(this.retailerCooperative);
+    const retailer = await RetailerCooperative.findById(
+      this.retailerCooperative,
+    );
 
     // Grab the Commodity model so we can access its conversionRate
     const Commodity = mongoose.model("Commodity");
@@ -57,23 +80,25 @@ allocationSchema.pre("save", async function () {
     if (retailer) {
       // 2. Loop over every item in the shipping allocation safely using for...of to allow async/await
       for (const allocatedItem of this.allocatedItems) {
-        
         // Pull the commodity data to see what its bulk multiplier is
         const commodityData = await Commodity.findById(allocatedItem.commodity);
         if (!commodityData) continue; // Fail-safe fallback
-        
+
         // Math magic! Converts bulk units to base units
         // E.g. Oil: 50 jerrycans * 20 L/jerrycan = 1,000 Liters
-        const actualReceivedQuantity = allocatedItem.quantity * commodityData.conversionRate;
+        const actualReceivedQuantity =
+          allocatedItem.quantity * commodityData.conversionRate;
 
         // Look for the commodity in the retailer's current inventory
         const itemIndex = retailer.availableCommodity.findIndex(
-          (rcItem) => rcItem.commodity.toString() === allocatedItem.commodity.toString()
+          (rcItem) =>
+            rcItem.commodity.toString() === allocatedItem.commodity.toString(),
         );
 
         if (itemIndex > -1) {
           // If they already have this commodity, just increase the quantity using BASE units
-          retailer.availableCommodity[itemIndex].quantity += actualReceivedQuantity;
+          retailer.availableCommodity[itemIndex].quantity +=
+            actualReceivedQuantity;
         } else {
           // If they don't have it yet, add a new nested object to the array using BASE units
           retailer.availableCommodity.push({
@@ -88,7 +113,6 @@ allocationSchema.pre("save", async function () {
       await retailer.save();
     }
   }
-
 });
 
 const Allocation = mongoose.model("Allocation", allocationSchema);

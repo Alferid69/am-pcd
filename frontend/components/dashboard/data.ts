@@ -43,18 +43,18 @@ export const baseNavItems: NavItem[] = [
 
 export const roleNavMap: Record<RoleKey, NavItem[]> = {
   admin: baseNavItems,
-  zone_trade_bureau: baseNavItems,
-  woreda_office: baseNavItems,
-  retailer_cooperative: baseNavItems,
-  retailer_cooperatives_bureau: baseNavItems,
+  bureau: baseNavItems,
+  zone: baseNavItems,
+  woreda: baseNavItems,
+  retailer: baseNavItems,
 };
 
 export const roleLabels: Record<RoleKey, string> = {
   admin: "dashboard.roles.admin",
-  zone_trade_bureau: "dashboard.roles.zoneTradeBureau",
-  woreda_office: "dashboard.roles.woredaOffice",
-  retailer_cooperative: "dashboard.roles.retailerCooperative",
-  retailer_cooperatives_bureau: "dashboard.roles.retailerCooperativesBureau",
+  bureau: "dashboard.roles.retailerCooperativesBureau",
+  zone: "dashboard.roles.zoneTradeBureau",
+  woreda: "dashboard.roles.woredaOffice",
+  retailer: "dashboard.roles.retailerCooperative",
 };
 
 export const isRoleKey = (value: string): value is RoleKey => {

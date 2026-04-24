@@ -52,7 +52,7 @@ const stockRequestSchema = new mongoose.Schema(
         },
         action: {
           type: String,
-          enum: ["SUBMITTED", "APPROVED", "REJECTED", "MODIFIED"],
+          enum: ["SUBMITTED", "APPROVED", "REJECTED", "MODIFIED", "ALLOCATED"],
           required: true,
         },
         remarks: {

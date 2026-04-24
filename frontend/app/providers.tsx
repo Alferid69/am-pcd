@@ -13,6 +13,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         // Data stays fresh for 1 minute to reduce API hammering
         staleTime: 60 * 1000,
         refetchOnWindowFocus: false,
+        // Always refetch when a component remounts (e.g. after navigating back
+        // from a 404 page), and retry once on network/abort errors
+        refetchOnMount: true,
+        retry: 1,
       },
     },
   }));

@@ -6,14 +6,10 @@ import { fetchStockRequests } from "../../../api/apiStockRequests";
 import RetailerRequestView from "../../../components/dashboard/requests/RetailerRequestView";
 import ApproverRequestView from "../../../components/dashboard/requests/ApproverRequestView";
 import { Package } from "lucide-react";
-import type { RoleKey } from "../../../components/dashboard/types";
+import { useUserRole } from "../../../hooks/useUserRole";
 
 export default function StockRequestPage() {
-  // Safe client-side role check
-  const userRole =
-    typeof window !== "undefined"
-      ? (localStorage.getItem("userRole") as RoleKey) || "retailer"
-      : "retailer";
+  const userRole = useUserRole();
 
   const {
     data: requests = [],

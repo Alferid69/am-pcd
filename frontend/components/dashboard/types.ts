@@ -1,9 +1,9 @@
 export type RoleKey =
   | "admin"
-  | "zone_trade_bureau"
-  | "woreda_office"
-  | "retailer_cooperative"
-  | "retailer_cooperatives_bureau";
+  | "bureau"
+  | "zone"
+  | "woreda"
+  | "retailer";
 
 export type IconName =
   | "dashboard"
@@ -77,11 +77,39 @@ export type StockRequest = {
   retailerCooperative: {
     _id: string;
     name: string;
-    woredaOffice?: string;
+    woredaOffice?: { _id: string; name: string };
   };
   requestedItems: StockRequestItem[];
   status: string;
   timeline: StockRequestTimeline[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AllocationItem = {
+  commodity: {
+    _id: string;
+    name: string;
+    unit?: string;
+    baseUnit?: string;
+    bulkUnit?: string;
+  };
+  quantity: number;
+  _id: string;
+};
+
+export type Allocation = {
+  _id: string;
+  stockRequest: string | StockRequest;
+  retailerCooperative: {
+    _id: string;
+    name: string;
+    woredaOffice?: { _id: string; name: string };
+  };
+  allocatedItems: AllocationItem[];
+  allocatedBy?: string;
+  status: "DISPATCHED" | "DELIVERED";
+  deliveryDate?: string;
   createdAt: string;
   updatedAt: string;
 };
