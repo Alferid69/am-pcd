@@ -2,6 +2,7 @@ const express = require("express");
 const morgan = require("morgan");
 const helmet = require("helmet");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use(helmet());
 
 // Body parser, reading data from  body into req.body
 app.use(express.json({ limit: "10mb" }));
+app.use(cookieParser());
 
 app.use("/api/v1/users", usersRouter);
 app.use("/api/v1/customers", customersRouter);

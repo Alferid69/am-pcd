@@ -7,6 +7,7 @@ import React, { useState, useSyncExternalStore } from "react";
 import { isAxiosError } from "axios";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "next-themes";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -21,12 +22,12 @@ export default function LoginPage() {
 
   const { t, i18n } = useTranslation();
   const { theme, setTheme } = useTheme();
+  const { login: authLogin } = useAuth();
 
   const loginMutation = useMutation({
     mutationFn: () => login({ username, password }),
     onSuccess: (data) => {
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("userRole", data.data.user.role);
+      authLogin(data);
       router.push("/dashboard");
     },
     onError: (err: unknown) => {

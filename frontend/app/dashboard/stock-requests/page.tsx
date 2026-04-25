@@ -6,10 +6,10 @@ import { fetchStockRequests } from "../../../api/apiStockRequests";
 import RetailerRequestView from "../../../components/dashboard/requests/RetailerRequestView";
 import ApproverRequestView from "../../../components/dashboard/requests/ApproverRequestView";
 import { Package } from "lucide-react";
-import { useUserRole } from "../../../hooks/useUserRole";
+import { useAuth } from "../../../contexts/AuthContext";
 
 export default function StockRequestPage() {
-  const userRole = useUserRole();
+  const { userRole } = useAuth();
 
   const {
     data: requests = [],

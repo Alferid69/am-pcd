@@ -3,6 +3,8 @@ const factory = require("./handlerFactory");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 
+const customerPopOptions = { path: "woreda" };
+
 exports.createCustomer = factory.createOne(Customer);
 exports.getAllCustomers = factory.getAll(Customer);
 exports.getCustomer = factory.getOne(Customer);
@@ -38,10 +40,12 @@ exports.getCustomerByFAN = catchAsync(async (req, res, next) => {
 // New controller to get customers by woredaOffice
 exports.getCustomersByWoredaOffice = catchAsync(async (req, res, next) => {
   const woredaOfficeId = req.params.woredaOfficeId;
+  console.log(woredaOfficeId, "we're here");
 
   const customers = await Customer.find({
     woreda: woredaOfficeId,
   }).populate(customerPopOptions);
+  console.log(customers, "we're here after customers");
 
   res.status(200).json({
     status: "success",

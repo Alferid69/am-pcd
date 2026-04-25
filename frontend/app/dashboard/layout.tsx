@@ -12,7 +12,7 @@ import {
   roleLabels,
   roleNavMap,
 } from "../../components/dashboard/data";
-import type { RoleKey } from "../../components/dashboard/types";
+import { useAuth } from "../../contexts/AuthContext";
 
 const NAV_PATHS: Record<string, string> = {
   overview: "/dashboard",
@@ -37,31 +37,12 @@ export default function DashboardLayout({
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [notificationCount] = useState(3);
+  const { userRole, userName, isLoading } = useAuth();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  const [clientUser] = useState(() => {
-    if (typeof window === "undefined") {
-      return { role: "admin", name: "Marta Alemu" };
-    }
-
-    return {
-      role: localStorage.getItem("userRole") ?? "admin",
-      name: localStorage.getItem("userName") ?? "Marta A.",
-    };
-  });
-
-  const userRole = useMemo<RoleKey>(() => {
-    if (isRoleKey(clientUser.role)) {
-      return clientUser.role;
-    }
-    return "admin";
-  }, [clientUser.role]);
-
-  const userName = clientUser.name;
 
   const navItems = useMemo(
     () => roleNavMap[userRole] ?? baseNavItems,
@@ -83,6 +64,38 @@ export default function DashboardLayout({
     }
     setMobileSidebarOpen(false);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-(--bpds-surface)">
+        <div className="flex flex-col items-center gap-4">
+          <svg
+            className="h-8 w-8 animate-spin text-(--bpds-primary)"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+          <p className="text-sm font-medium text-muted-foreground">
+            Loading your dashboard...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
 
   return (

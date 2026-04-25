@@ -34,6 +34,14 @@ const customerSchema = new mongoose.Schema(
       required: [true, "Woreda field is required"],
       index: true,
     },
+    kebele: {
+      type: String,
+      required: [true, "Kebele field is required"],
+    },
+    houseNumber: {
+      type: String,
+      required: [true, "House number field is required"],
+    },
     phone: {
       type: String,
       required: [true, "Phone field is required"],

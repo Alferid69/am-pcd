@@ -2,13 +2,18 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 module.exports = async (req, res, next) => {
+  let token;
   const authHeader = req.header("Authorization");
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "No or invalid token provided" });
+  if (req.cookies.jwt) {
+    token = req.cookies.jwt;
+  } else if (authHeader && authHeader.startsWith("Bearer ")) {
+    token = authHeader.replace("Bearer ", "");
   }
 
-  const token = authHeader.replace("Bearer ", "");
+  if (!token) {
+    return res.status(401).json({ message: "No or invalid token provided" });
+  }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);

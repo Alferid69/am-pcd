@@ -113,3 +113,46 @@ export type Allocation = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type Customer = {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  gender: 'male' | 'female';
+  age: number;
+  fayda: string;
+  phone: string;
+  woreda: string;
+  kebele: string;
+  houseNumber: string;
+  status: 'available' | 'taken';
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CreateCustomerPayload = Omit<Customer, '_id' | 'createdAt' | 'updatedAt'>;
+
+export type RetailerCooperative = {
+  _id: string;
+  name: string;
+  woredaOffice?: { _id: string; name: string };
+  availableCommodity?: {
+    commodity: { _id: string; name: string; baseUnit: string; price: number };
+    quantity: number;
+    _id: string;
+  }[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type Transaction = {
+  _id: string;
+  retailer: { _id: string; name: string; woredaOffice: { _id: string; name: string } };
+  customerFayda: string;
+  customer: { _id: string; firstName: string; lastName: string; phone: string; fayda: string };
+  commodity: { _id: string; name: string; price: number; baseUnit: string; bulkUnit: string };
+  amount: number;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+};

@@ -5,6 +5,8 @@ import React, { useState } from 'react';
 import { ThemeProvider } from 'next-themes';
 import '@/lib/i18n';
 
+import { AuthProvider } from '@/contexts/AuthContext';
+
 export default function Providers({ children }: { children: React.ReactNode }) {
   // Create a new QueryClient instance per request/session to avoid cross-request data leakage
   const [queryClient] = useState(() => new QueryClient({
@@ -24,7 +26,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
       <QueryClientProvider client={queryClient}>
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>
   );

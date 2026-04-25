@@ -49,6 +49,8 @@ type DashboardSidebarProps = {
   onClose: () => void;
 };
 
+import { useAuth } from "@/contexts/AuthContext";
+
 export default function DashboardSidebar({
   isOpen,
   activeNav,
@@ -60,6 +62,7 @@ export default function DashboardSidebar({
   onSelectNav,
   onClose,
 }: DashboardSidebarProps) {
+  const { logout } = useAuth();
   return (
     <>
       {isOpen && (
@@ -137,9 +140,7 @@ export default function DashboardSidebar({
             type="button"
             className="flex w-full items-center gap-3 rounded-xl border border-transparent px-3 py-2 text-left text-(--bpds-error) hover:border-(--bpds-error) hover:bg-(--bpds-error)/10 transition"
             onClick={() => {
-              localStorage.removeItem("token");
-              localStorage.removeItem("userRole");
-              window.location.href = "/login";
+              logout();
             }}
           >
             <LogOut

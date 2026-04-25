@@ -6,7 +6,7 @@ import { PieChart, CheckCircle2, Truck, Plus } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchAllocations, updateAllocationStatus } from "../../../api/apiAllocations";
 import type { Allocation } from "../types";
-import { useUserRole } from "../../../hooks/useUserRole";
+import { useAuth } from "../../../contexts/AuthContext";
 import {
   Table,
   TableBody,
@@ -22,7 +22,7 @@ import CreateAllocationDialog from "./CreateAllocationDialog";
 
 export default function AllocationsView() {
   const queryClient = useQueryClient();
-  const userRole = useUserRole();
+  const { userRole } = useAuth();
 
   const { data: allocations = [], isLoading } = useQuery<Allocation[]>({
     queryKey: ["allocations"],

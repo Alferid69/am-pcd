@@ -65,6 +65,7 @@ exports.createTransaction = catchAsync(async (req, res, next) => {
     retailer,
     status: "success",
     user: req.user._id,
+    customer: customer._id,
   });
 
   await Promise.all([
@@ -112,6 +113,7 @@ const transactionPopOptions = [
   { path: "commodity", select: "name price baseUnit bulkUnit" },
   { path: "user", select: "username firstName lastName" },
   { path: "retailer", select: "name woredaOffice" },
+  { path: "customer", select: "firstName lastName phone fayda" },
 ];
 
 // exports.getAllTransactions = factory.getAll(Transaction, transactionPopOptions);

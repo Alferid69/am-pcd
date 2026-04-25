@@ -12,6 +12,11 @@ const transactionSchema = new mongoose.Schema(
       type: String,
       required: [true, "Customer fayda number field is required"],
     },
+    customer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Customer",
+      required: [true, "Customer reference field is required"],
+    },
     amount: {
       type: Number,
       required: [true, "Amount field is required"],
