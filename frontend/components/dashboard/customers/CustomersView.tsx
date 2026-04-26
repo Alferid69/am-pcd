@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { Users, CheckCircle2, XCircle, Search, Filter, Eye } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   fetchCustomers,
   fetchCustomersByWoreda,
@@ -29,11 +30,13 @@ import { Button } from "@/components/ui/button";
 
 export default function CustomersView() {
   const { userRole, worksAt: woredaId } = useAuth();
+  const searchParams = useSearchParams();
+  const initialWoredaFilter = searchParams.get("woredaId") ?? "all";
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<
     "all" | "available" | "taken"
   >("all");
-  const [woredaFilter, setWoredaFilter] = useState<string>("all");
+  const [woredaFilter, setWoredaFilter] = useState<string>(initialWoredaFilter);
 
   const isWoreda = userRole === "woreda";
   const canViewFilters =

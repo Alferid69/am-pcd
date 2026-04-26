@@ -11,11 +11,21 @@ interface AuthState {
   worksAt: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  user: {
+    _id?: string;
+    firstName?: string;
+    lastName?: string;
+    username?: string;
+    email?: string;
+    phone?: string;
+    role?: string;
+  } | null;
 }
 
 interface AuthContextType extends AuthState {
   login: (data: any) => void;
   logout: () => void;
+  refreshUser: () => Promise<void>;
 }
 
 const defaultState: AuthState = {
@@ -24,6 +34,7 @@ const defaultState: AuthState = {
   worksAt: null,
   isAuthenticated: false,
   isLoading: true,
+  user: null,
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -48,6 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         worksAt,
         isAuthenticated: true,
         isLoading: false,
+        user,
       });
     } catch (error) {
       setState({
@@ -56,6 +68,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     }
   }, []);
+
+  const refreshUser = useCallback(async () => {
+    await fetchUser();
+  }, [fetchUser]);
 
   useEffect(() => {
     fetchUser();
@@ -76,6 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       worksAt,
       isAuthenticated: true,
       isLoading: false,
+      user,
     });
   }, []);
 
@@ -94,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ ...state, login, logout }}>
+    <AuthContext.Provider value={{ ...state, login, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

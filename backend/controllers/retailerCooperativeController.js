@@ -4,7 +4,7 @@ const factory = require("./handlerFactory");
 const retailerCooperativePopOptions = [
   {
     path: 'availableCommodity.commodity', // Populating a nested path
-    select: 'name unit price'
+    select: 'name price baseUnit bulkUnit'
   },
   {
     path: 'woredaOffice',

@@ -45,6 +45,10 @@ export default function MakeSaleDialog() {
   });
 
   const availableCommodities = retailer?.availableCommodity || [];
+  const selectedCommodity = availableCommodities.find(
+    (ac: any) => ac.commodity._id === formData.commodity
+  );
+  const selectedUnit = selectedCommodity?.commodity?.baseUnit || "";
 
   const transactionMutation = useMutation({
     mutationFn: createTransaction,
@@ -85,27 +89,29 @@ export default function MakeSaleDialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button
-          size="lg"
-          className="shadow-lg hover:shadow-xl transition-all"
-        >
-          <ShoppingCart className="w-5 h-5 mr-2" />
-          Make a Sale
-        </Button>
+      <DialogTrigger
+        render={
+          <Button
+            size="lg"
+            className="shadow-lg hover:shadow-xl transition-all"
+          />
+        }
+      >
+        <ShoppingCart className="w-5 h-5 mr-2" />
+        Make a Sale
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Register New Sale</DialogTitle>
           <DialogDescription>
-            Enter the customer's Fayda ID and select the commodity.
+            Enter the customer&apos;s Fayda ID and select the commodity.
           </DialogDescription>
         </DialogHeader>
 
         {submitError && (
-          <div className="mb-4 flex items-center rounded-md bg-(--bpds-error-container) p-3 text-(--bpds-on-error-container)">
-            <AlertCircle className="mr-2 h-5 w-5" />
-            <span className="text-sm">{submitError}</span>
+          <div className="mb-4 flex items-center rounded-md bg-red-50 border border-red-200 p-3 text-red-600 dark:bg-red-900/20 dark:border-red-900/50 dark:text-red-400">
+            <AlertCircle className="mr-2 h-5 w-5 flex-shrink-0" />
+            <span className="text-sm font-medium">{submitError}</span>
           </div>
         )}
 
@@ -129,11 +135,13 @@ export default function MakeSaleDialog() {
             <Select
               value={formData.commodity}
               onValueChange={(value) =>
-                setFormData({ ...formData, commodity: value })
+                setFormData({ ...formData, commodity: value ?? "" })
               }
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Select commodity" />
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select commodity">
+                  {selectedCommodity?.commodity.name}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {availableCommodities.length === 0 ? (
@@ -147,7 +155,7 @@ export default function MakeSaleDialog() {
                       value={ac.commodity._id}
                       disabled={ac.quantity <= 0}
                     >
-                      {ac.commodity.name} ({ac.quantity} available) - {ac.commodity.price} ETB
+                      {ac.commodity.name} ({ac.quantity} {ac.commodity.baseUnit} available) - {ac.commodity.price} ETB
                     </SelectItem>
                   ))
                 )}
@@ -156,7 +164,9 @@ export default function MakeSaleDialog() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="amount">Quantity (Base Unit)</Label>
+            <Label htmlFor="amount">
+              Quantity {selectedUnit ? `(${selectedUnit})` : ""}
+            </Label>
             <Input
               id="amount"
               type="number"

@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Store } from "lucide-react";
 import TransactionList from "../../../../../components/dashboard/transactions/TransactionList";
+import InventoryOverview from "../../../../../components/dashboard/transactions/InventoryOverview";
 import { fetchRetailerById } from "../../../../../api/apiRetailers";
 import { Button } from "../../../../../components/ui/button";
 
@@ -46,6 +47,8 @@ export default function RetailerTransactionDetail() {
           </p>
         </div>
       </div>
+
+      <InventoryOverview retailerId={retailerId} />
 
       <TransactionList retailerId={retailerId} />
     </div>

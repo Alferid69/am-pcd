@@ -16,6 +16,11 @@ router.post(
 );
 
 router.get(
+  "/:id/stats",
+  auth,
+  woredaOfficeController.getWoredaStats
+);
+router.get(
   "/:id",
   auth,
   woredaOfficeController.getWoredaOfficeById

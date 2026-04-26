@@ -4,6 +4,7 @@ import React from "react";
 import { useAuth } from "../../../contexts/AuthContext";
 import TransactionList from "./TransactionList";
 import MakeSaleDialog from "./MakeSaleDialog";
+import InventoryOverview from "./InventoryOverview";
 import { Store } from "lucide-react";
 
 export default function RetailerTransactions() {
@@ -26,6 +27,8 @@ export default function RetailerTransactions() {
           <MakeSaleDialog />
         </div>
       </div>
+
+      <InventoryOverview retailerId={retailerId} />
 
       <TransactionList retailerId={retailerId} />
     </div>
