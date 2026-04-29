@@ -5,38 +5,19 @@ const {
   getRetailerCooperative,
   updateRetailerCooperative,
   deleteRetailerCooperative,
-  getRetailerCooperativeDetails,
+  getRetailerPerformance,
 } = require("../controllers/retailerCooperativeController");
 
 const auth = require("../middleware/auth");
 
 const router = express.Router();
 
+router.get("/", auth, getAllRetailerCooperatives);
+router.post("/", auth, createRetailerCooperative);
+router.get("/:id", auth, getRetailerCooperative);
+router.get("/:id/performance", auth, getRetailerPerformance);
 
-router.get(
-  "/",
-  auth,
-  getAllRetailerCooperatives
-);
-router.post(
-  "/",
-  auth,
-  createRetailerCooperative
-);
-router.get(
-  "/:id",
-  auth,
-  getRetailerCooperative
-);
-router.patch(
-  "/:id",
-  auth,
-  updateRetailerCooperative
-);
-router.delete(
-  "/:id",
-  auth,
-  deleteRetailerCooperative
-);
+router.patch("/:id", auth, updateRetailerCooperative);
+router.delete("/:id", auth, deleteRetailerCooperative);
 
 module.exports = router;

@@ -9,6 +9,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { format } from "date-fns";
+import Link from "next/link";
 import {
   Table,
   TableBody,
@@ -30,8 +31,9 @@ import {
 } from "../../ui/dialog";
 import { Textarea } from "../../ui/textarea";
 import type { StockRequest } from "../types";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { updateStockRequestAction } from "../../../api/apiStockRequests";
+import { fetchRetailerPerformance } from "../../../api/apiRetailers";
 
 interface ApproverRequestViewProps {
   requests: StockRequest[];
@@ -44,7 +46,10 @@ const getStatusBadge = (status: string) => {
     case "PENDING_WOREDA":
     case "PENDING_ZONE":
     case "PENDING_BUREAU":
-      const displayStatus = status.split("_").map(w => w.charAt(0) + w.slice(1).toLowerCase()).join(" ");
+      const displayStatus = status
+        .split("_")
+        .map((w) => w.charAt(0) + w.slice(1).toLowerCase())
+        .join(" ");
       return (
         <Badge
           variant="secondary"
@@ -54,13 +59,21 @@ const getStatusBadge = (status: string) => {
         </Badge>
       );
     case "APPROVED":
-    case "FULFILLED":
       return (
         <Badge
           variant="default"
           className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-500"
         >
           <CheckCircle2 className="w-3 h-3 mr-1" /> Approved
+        </Badge>
+      );
+    case "FULFILLED":
+      return (
+        <Badge
+          variant="default"
+          className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-500"
+        >
+          <CheckCircle2 className="w-3 h-3 mr-1" /> Fulfilled
         </Badge>
       );
     case "REJECTED":
@@ -201,6 +214,22 @@ export default function ApproverRequestView({
   );
   const [remarks, setRemarks] = useState("");
   const [isPerformanceOpen, setIsPerformanceOpen] = useState(false);
+
+  const { data: performanceData, isFetching: isFetchingPerformance } = useQuery(
+    {
+      queryKey: [
+        "retailerPerformance",
+        selectedRequest?.retailerCooperative?._id,
+      ],
+      queryFn: () => {
+        if (!selectedRequest?.retailerCooperative?._id) return null;
+        return fetchRetailerPerformance(
+          selectedRequest.retailerCooperative._id,
+        );
+      },
+      enabled: isPerformanceOpen && !!selectedRequest?.retailerCooperative?._id,
+    },
+  );
 
   // We split requests into "Needs Attention" and "History"
   const pendingRequests = requests.filter(
@@ -356,54 +385,113 @@ export default function ApproverRequestView({
       <Dialog open={isPerformanceOpen} onOpenChange={setIsPerformanceOpen}>
         <DialogContent className="sm:max-w-125">
           <DialogHeader>
-            <DialogTitle>Retailer Performance (Last 30 Days)</DialogTitle>
+            <DialogTitle>Retailer Performance</DialogTitle>
             <DialogDescription>
               Overview for {selectedRequest?.retailerCooperative?.name}
             </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-4 pt-4">
-            <div className="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 text-center">
-              <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-1">
-                Distribution Rate
-              </p>
-              <p className="text-3xl font-bold text-green-600 dark:text-green-400">
-                94%
-              </p>
-            </div>
-            <div className="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 text-center">
-              <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-1">
-                Items Sold
-              </p>
-              <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                1,240
-              </p>
-            </div>
-            <div className="col-span-2 bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
-              <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-2">
-                Recent Compliance
-              </p>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Timely Reporting</span>{" "}
-                  <span className="font-medium text-green-600">Excellent</span>
+            <div className="col-span-2">
+              {isFetchingPerformance ? (
+                <div className="h-48 flex flex-col items-center justify-center text-sm text-muted-foreground gap-3">
+                  <div className="w-8 h-8 border-2 border-(--bpds-primary) border-t-transparent rounded-full animate-spin" />
+                  Loading 30-day performance data...
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span>Price Gouging Flags</span>{" "}
-                  <span className="font-medium text-slate-600 dark:text-slate-400">
-                    None
-                  </span>
+              ) : (
+                <div className="space-y-6">
+                  {/* Summary Cards */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 text-center">
+                      <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-1">
+                        30-Day Efficiency
+                      </p>
+                      <p className={`text-3xl font-bold ${
+                        (performanceData?.overallEfficiency || 0) > 70 
+                          ? "text-green-600 dark:text-green-400" 
+                          : "text-amber-600 dark:text-amber-400"
+                      }`}>
+                        {performanceData?.overallEfficiency || 0}%
+                      </p>
+                      <p className="text-[10px] mt-1 text-slate-400">
+                        Total Sold / Total Allocated
+                      </p>
+                    </div>
+                    <div className="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 text-center">
+                      <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-1">
+                        Total Volume
+                      </p>
+                      <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                        {(performanceData?.totalSold || 0).toLocaleString()}
+                      </p>
+                      <p className="text-[10px] mt-1 text-slate-400">
+                        Units sold in last 30 days
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Commodity Breakdown */}
+                  <div>
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 px-1">
+                      Commodity Efficiency (Last 30 Days)
+                    </h4>
+                    <div className="rounded-lg border border-slate-100 dark:border-slate-800 overflow-hidden">
+                      <Table>
+                        <TableHeader className="bg-slate-50 dark:bg-slate-900/50">
+                          <TableRow>
+                            <TableHead className="text-[10px] h-8 py-1">Commodity</TableHead>
+                            <TableHead className="text-[10px] h-8 py-1 text-right">Allocated</TableHead>
+                            <TableHead className="text-[10px] h-8 py-1 text-right">Sold</TableHead>
+                            <TableHead className="text-[10px] h-8 py-1 text-right">%</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {performanceData?.commodityBreakdown?.length > 0 ? (
+                            performanceData.commodityBreakdown.map((item: any, idx: number) => (
+                              <TableRow key={idx} className="h-10">
+                                <TableCell className="py-1.5 text-xs font-medium">
+                                  {item.name}
+                                </TableCell>
+                                <TableCell className="py-1.5 text-xs text-right text-muted-foreground">
+                                  {item.allocated} {item.unit}
+                                </TableCell>
+                                <TableCell className="py-1.5 text-xs text-right font-semibold">
+                                  {item.sold} {item.unit}
+                                </TableCell>
+                                <TableCell className="py-1.5 text-xs text-right">
+                                  <Badge variant="outline" className={`text-[10px] h-5 ${
+                                    item.efficiency > 70 ? "text-green-600 border-green-100" : "text-amber-600 border-amber-100"
+                                  }`}>
+                                    {item.efficiency}%
+                                  </Badge>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          ) : (
+                            <TableRow>
+                              <TableCell colSpan={4} className="text-center py-4 text-xs text-muted-foreground">
+                                No allocations received in the last 30 days.
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-center">
+                    <Link href={`/dashboard/transactions/retailer/${selectedRequest?.retailerCooperative?._id}`} className="w-full">
+                      <Button variant="outline" className="w-full text-xs gap-2">
+                        View Full Transaction History
+                        <ChevronRight className="w-3 h-3" />
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span>Stock Discrepancy</span>{" "}
-                  <span className="font-medium text-slate-600 dark:text-slate-400">
-                    &lt; 1%
-                  </span>
-                </div>
-              </div>
+              )}
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={() => setIsPerformanceOpen(false)}>Close</Button>
+            <Button variant="ghost" onClick={() => setIsPerformanceOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

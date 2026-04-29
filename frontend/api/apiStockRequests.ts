@@ -9,15 +9,15 @@ export const fetchStockRequests = async (): Promise<StockRequest[]> => {
 export const createStockRequest = async (payload: {
   requestedItems: { commodity: string; quantity: number; unit: string }[];
 }) => {
-  console.log(" Payload:",payload)
+  console.log(" Payload:", payload);
   const response = await apiClient.post("/stockRequests", payload);
-  
+
   return response.data.data;
 };
 
 export const updateStockRequestAction = async (
   id: string,
-  payload: { action: "APPROVED" | "REJECTED"; remarks?: string }
+  payload: { action: "APPROVED" | "REJECTED"; remarks?: string },
 ) => {
   const response = await apiClient.patch(`/stockRequests/${id}`, payload);
   return response.data.data;
@@ -25,7 +25,9 @@ export const updateStockRequestAction = async (
 
 export const updateRequestItems = async (
   id: string,
-  payload: { requestedItems: { commodity: string; quantity: number; unit: string }[] }
+  payload: {
+    requestedItems: { commodity: string; quantity: number; unit: string }[];
+  },
 ) => {
   const response = await apiClient.patch(`/stockRequests/${id}`, payload);
   return response.data.data;

@@ -45,24 +45,6 @@ const allocationSchema = new mongoose.Schema(
   },
 );
 
-// When an allocation is saved, automatically set the StockRequest status to FULFILLED
-allocationSchema.post("save", async function (doc) {
-  const StockRequest = mongoose.model("StockRequest");
-  const stockReq = await StockRequest.findById(doc.stockRequest);
-
-  // Since allocations are 1:1 with StockRequests, we can just idempotently check this
-  if (stockReq && stockReq.status !== "FULFILLED") {
-    stockReq.status = "FULFILLED";
-    stockReq.timeline.push({
-      actor: doc.allocatedBy || null,
-      role: "bureau",
-      action: "ALLOCATED",
-      remarks: "Allocation has been dispatched",
-    });
-    await stockReq.save();
-  }
-});
-
 // Automatic Stock Management Hook
 // When the allocation status changes to DELIVERED, physically add stock to the Retailer Cooperative
 allocationSchema.pre("save", async function () {

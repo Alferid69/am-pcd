@@ -17,7 +17,7 @@ export const createAllocation = async (payload: {
 
 export const updateAllocationStatus = async (
   id: string,
-  payload: { status: "DELIVERED"; deliveryDate: string }
+  payload: { status: "DELIVERED"; deliveryDate: string },
 ) => {
   const response = await apiClient.patch(`/allocations/${id}`, payload);
   return response.data.data;

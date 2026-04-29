@@ -16,13 +16,13 @@ export const fetchUnreadNotifications = async (): Promise<Notification[]> => {
 };
 
 export const markNotificationAsRead = async (id: string) => {
-  const response = await apiClient.patch(`/notifications/${id}`, { isRead: true });
+  const response = await apiClient.patch(`/notifications/${id}`, {
+    isRead: true,
+  });
   return response.data.data;
 };
 
 export const markAllNotificationsAsRead = async () => {
-  // We can fetch unread and patch them, or write a custom endpoint. 
-  // Let's patch them one by one if custom endpoint is not available.
-  const unread = await fetchUnreadNotifications();
-  await Promise.all(unread.map(n => markNotificationAsRead(n._id)));
+  const response = await apiClient.patch("/notifications/markAllAsRead");
+  return response.data;
 };

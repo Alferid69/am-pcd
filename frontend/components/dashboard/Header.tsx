@@ -6,10 +6,16 @@ import {
   Moon,
   Sun,
   Check,
+  CheckCircle2,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchUnreadNotifications, markNotificationAsRead, Notification } from "../../api/apiNotifications";
+import {
+  fetchUnreadNotifications,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  Notification,
+} from "../../api/apiNotifications";
 
 type DashboardHeaderProps = {
   welcomeLabel: string;
@@ -60,10 +66,20 @@ export default function DashboardHeader({
     },
   });
 
+  const markAllAsReadMutation = useMutation({
+    mutationFn: markAllNotificationsAsRead,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
+  });
+
   // Close dropdown on click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setShowNotifications(false);
       }
     };
@@ -135,7 +151,7 @@ export default function DashboardHeader({
               type="button"
               onClick={() => setShowNotifications(!showNotifications)}
               aria-label={notificationsLabel}
-              className={`relative inline-flex h-10 w-10 items-center justify-center rounded-lg border border-(--bpds-outline-variant) text-(--bpds-on-surface) transition-colors ${showNotifications ? 'bg-(--bpds-surface-variant)' : 'bg-(--bpds-surface-container-lowest)'}`}
+              className={`relative inline-flex h-10 w-10 items-center justify-center rounded-lg border border-(--bpds-outline-variant) text-(--bpds-on-surface) transition-colors ${showNotifications ? "bg-(--bpds-surface-variant)" : "bg-(--bpds-surface-container-lowest)"}`}
             >
               <Bell
                 className="h-4.75 w-4.75"
@@ -152,8 +168,23 @@ export default function DashboardHeader({
             {showNotifications && (
               <div className="absolute right-0 mt-2 w-80 rounded-xl border border-(--bpds-outline-variant) bg-(--bpds-surface) shadow-(--bpds-shadow-level-3) overflow-hidden z-50">
                 <div className="bg-(--bpds-surface-container-low) px-4 py-3 border-b border-(--bpds-outline-variant) flex justify-between items-center">
-                  <h3 className="font-semibold text-(--bpds-on-surface)">Notifications</h3>
-                  <span className="text-xs bg-(--bpds-primary-container) text-(--bpds-on-primary-container) px-2 py-0.5 rounded-full">{notifications.length} New</span>
+                  <div className="flex gap-2 items-center">
+                    <h3 className="font-semibold text-(--bpds-on-surface)">
+                      Notifications
+                    </h3>
+                    <span className="text-xs font-semibold bg-(--bpds-error) text-(--bpds-on-error) px-2 py-0.5 rounded-full">
+                      {notifications.length}
+                    </span>
+                  </div>
+                  {notifications.length > 0 && (
+                    <button
+                      onClick={() => markAllAsReadMutation.mutate()}
+                      className="text-xs flex items-center gap-1 text-(--bpds-primary) hover:underline"
+                      disabled={markAllAsReadMutation.isPending}
+                    >
+                      <CheckCircle2 className="w-3 h-3" /> Mark all read
+                    </button>
+                  )}
                 </div>
                 <div className="max-h-75 overflow-y-auto">
                   {notifications.length === 0 ? (
@@ -163,14 +194,24 @@ export default function DashboardHeader({
                   ) : (
                     <ul className="divide-y divide-(--bpds-outline-variant)">
                       {notifications.map((notif) => (
-                        <li key={notif._id} className="p-4 hover:bg-(--bpds-surface-container-lowest) transition-colors flex gap-3 items-start group">
+                        <li
+                          key={notif._id}
+                          className="p-4 hover:bg-(--bpds-surface-container-lowest) transition-colors flex gap-3 items-start group"
+                        >
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm text-(--bpds-on-surface) font-medium leading-snug">{notif.message}</p>
+                            <p className="text-sm text-(--bpds-on-surface) font-medium leading-snug">
+                              {notif.message}
+                            </p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              {new Date(notif.createdAt).toLocaleDateString()} at {new Date(notif.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                              {new Date(notif.createdAt).toLocaleDateString()}{" "}
+                              at{" "}
+                              {new Date(notif.createdAt).toLocaleTimeString(
+                                [],
+                                { hour: "2-digit", minute: "2-digit" },
+                              )}
                             </p>
                           </div>
-                          <button 
+                          <button
                             onClick={() => markAsReadMutation.mutate(notif._id)}
                             className="shrink-0 p-1.5 rounded-full bg-transparent hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-400 hover:text-green-600 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
                             title="Mark as read"

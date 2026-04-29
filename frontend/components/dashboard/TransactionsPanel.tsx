@@ -1,4 +1,5 @@
 import type { DashboardTransaction } from "./types";
+import { Download } from "lucide-react";
 
 type TransactionsPanelProps = {
   title: string;
@@ -19,18 +20,60 @@ export default function TransactionsPanel({
   columnLabels,
   rows,
 }: TransactionsPanelProps) {
+  const handleExport = () => {
+    // Basic CSV Export implementation
+    const headers = [
+      columnLabels.commodity,
+      columnLabels.from,
+      columnLabels.to,
+      columnLabels.quantity,
+      columnLabels.status,
+    ];
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) =>
+        [row.commodity, row.from, row.to, row.quantity, row.status]
+          // Quote strings to handle commas inside the text automatically
+          .map((val) => `"${val}"`)
+          .join(","),
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `Transactions_Export_${new Date().toISOString().split("T")[0]}.csv`,
+    );
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <article className="xl:col-span-2 rounded-2xl border border-(--bpds-outline-variant) bg-(--bpds-surface-container-lowest) p-6 shadow-(--bpds-shadow-level-1)">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-lg font-semibold text-(--bpds-on-surface)">
           {title}
         </h3>
-        <button
-          type="button"
-          className="rounded-lg border border-(--bpds-outline-variant) px-3 py-1.5 text-sm font-medium text-(--bpds-on-surface-variant)"
-        >
-          {viewAllLabel}
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={handleExport}
+            className="flex items-center gap-2 rounded-lg border border-(--bpds-outline-variant) px-3 py-1.5 text-sm font-medium text-(--bpds-on-surface-variant) hover:bg-slate-100 dark:hover:bg-slate-800"
+          >
+            <Download className="w-4 h-4" /> Export CSV
+          </button>
+          <button
+            type="button"
+            className="rounded-lg border border-(--bpds-outline-variant) px-3 py-1.5 text-sm font-medium text-(--bpds-on-surface-variant)"
+          >
+            {viewAllLabel}
+          </button>
+        </div>
       </div>
 
       <div className="overflow-x-auto">

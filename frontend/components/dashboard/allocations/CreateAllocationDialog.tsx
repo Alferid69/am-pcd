@@ -30,18 +30,26 @@ export default function CreateAllocationDialog() {
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedRequestId, setSelectedRequestId] = useState<string>("");
-  const [allocatedItems, setAllocatedItems] = useState<{ commodity: string; quantity: number }[]>([]);
+  const [allocatedItems, setAllocatedItems] = useState<
+    { commodity: string; quantity: number }[]
+  >([]);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Fetch all stock requests (backend filters to those Bureau can see)
-  const { data: allRequests = [], isLoading: isLoadingRequests } = useQuery<StockRequest[]>({
+  const { data: allRequests = [], isLoading: isLoadingRequests } = useQuery<
+    StockRequest[]
+  >({
     queryKey: ["stockRequests"],
-    queryFn: fetchStockRequests,
+    queryFn: () => fetchStockRequests(),
   });
 
   // Since we added the backend hook to set FULFILLED on allocation, APPROVED ones are truly pending allocation
-  const approvedRequests = allRequests.filter(req => req.status === "APPROVED");
-  const selectedRequest = approvedRequests.find(r => r._id === selectedRequestId);
+  const approvedRequests = allRequests.filter(
+    (req) => req.status === "APPROVED",
+  );
+  const selectedRequest = approvedRequests.find(
+    (r) => r._id === selectedRequestId,
+  );
 
   const createMutation = useMutation({
     mutationFn: createAllocation,
@@ -53,8 +61,11 @@ export default function CreateAllocationDialog() {
       setAllocatedItems([]);
     },
     onError: (err: any) => {
-      setSubmitError(err?.response?.data?.message ?? "Failed to create allocation. Please try again.");
-    }
+      setSubmitError(
+        err?.response?.data?.message ??
+          "Failed to create allocation. Please try again.",
+      );
+    },
   });
 
   const handleSelectRequest = (id: string | null) => {
@@ -63,16 +74,16 @@ export default function CreateAllocationDialog() {
       setAllocatedItems([]);
       return;
     }
-    
+
     setSelectedRequestId(id);
-    const req = approvedRequests.find(r => r._id === id);
+    const req = approvedRequests.find((r) => r._id === id);
     if (req) {
       // Pre-fill the allocation items with the exact requested amounts
       setAllocatedItems(
-        req.requestedItems.map(item => ({
+        req.requestedItems.map((item) => ({
           commodity: item.commodity?._id || "",
-          quantity: item.quantity
-        }))
+          quantity: item.quantity,
+        })),
       );
     } else {
       setAllocatedItems([]);
@@ -80,7 +91,7 @@ export default function CreateAllocationDialog() {
   };
 
   const handleQuantityChange = (index: number, value: number) => {
-    setAllocatedItems(prev => {
+    setAllocatedItems((prev) => {
       const next = [...prev];
       next[index].quantity = value;
       return next;
@@ -94,8 +105,8 @@ export default function CreateAllocationDialog() {
     if (!selectedRequest) return;
 
     // Filter out invalid items (quantity <= 0) just in case
-    const validItems = allocatedItems.filter(item => item.quantity > 0);
-    
+    const validItems = allocatedItems.filter((item) => item.quantity > 0);
+
     if (validItems.length === 0) {
       setSubmitError("You must allocate at least 1 unit of a commodity.");
       return;
@@ -104,19 +115,22 @@ export default function CreateAllocationDialog() {
     createMutation.mutate({
       stockRequest: selectedRequest._id,
       retailerCooperative: selectedRequest.retailerCooperative._id,
-      allocatedItems: validItems
+      allocatedItems: validItems,
     });
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => {
-      setIsOpen(open);
-      if (!open) {
-        setSelectedRequestId("");
-        setAllocatedItems([]);
-        setSubmitError(null);
-      }
-    }}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        setIsOpen(open);
+        if (!open) {
+          setSelectedRequestId("");
+          setAllocatedItems([]);
+          setSubmitError(null);
+        }
+      }}
+    >
       <DialogTrigger
         render={
           <Button className="bg-(--bpds-primary) text-(--bpds-on-primary) hover:bg-(--bpds-primary)/90 shadow-(--bpds-shadow-level-2)" />
@@ -127,27 +141,40 @@ export default function CreateAllocationDialog() {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Package className="w-5 h-5 text-(--bpds-primary)" /> Dispatch Allocation
+            <Package className="w-5 h-5 text-(--bpds-primary)" /> Dispatch
+            Allocation
           </DialogTitle>
           <DialogDescription>
-            Select an approved Stock Request to allocate physical goods to the cooperative.
+            Select an approved Stock Request to allocate physical goods to the
+            cooperative.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 pt-4">
           <div className="space-y-2">
             <Label>Approved Stock Request</Label>
-            <Select value={selectedRequestId} onValueChange={handleSelectRequest} disabled={isLoadingRequests}>
+            <Select
+              value={selectedRequestId}
+              onValueChange={handleSelectRequest}
+              disabled={isLoadingRequests}
+            >
               <SelectTrigger>
-                <SelectValue placeholder={isLoadingRequests ? "Loading..." : "Select a request..."} />
+                <SelectValue
+                  placeholder={
+                    isLoadingRequests ? "Loading..." : "Select a request..."
+                  }
+                />
               </SelectTrigger>
               <SelectContent>
                 {approvedRequests.length === 0 && !isLoadingRequests ? (
-                  <div className="p-2 text-sm text-muted-foreground text-center">No approved requests pending allocation.</div>
+                  <div className="p-2 text-sm text-muted-foreground text-center">
+                    No approved requests pending allocation.
+                  </div>
                 ) : (
-                  approvedRequests.map(req => (
+                  approvedRequests.map((req) => (
                     <SelectItem key={req._id} value={req._id}>
-                      {req.retailerCooperative?.name} — {new Date(req.createdAt).toLocaleDateString()}
+                      {req.retailerCooperative?.name} —{" "}
+                      {new Date(req.createdAt).toLocaleDateString()}
                     </SelectItem>
                   ))
                 )}
@@ -157,34 +184,47 @@ export default function CreateAllocationDialog() {
 
           {selectedRequest && (
             <div className="space-y-4 rounded-lg border border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50 p-4">
-              <h4 className="text-sm font-semibold text-(--bpds-on-surface)">Items to Allocate</h4>
+              <h4 className="text-sm font-semibold text-(--bpds-on-surface)">
+                Items to Allocate
+              </h4>
               <div className="space-y-3">
                 {selectedRequest.requestedItems.map((reqItem, idx) => {
                   const allocatedItem = allocatedItems[idx];
                   if (!allocatedItem) return null;
-                  
+
                   return (
                     <div key={idx} className="flex items-center gap-4">
                       <div className="flex-1">
-                        <Label className="text-xs text-muted-foreground">Commodity</Label>
+                        <Label className="text-xs text-muted-foreground">
+                          Commodity
+                        </Label>
                         <div className="text-sm font-medium pt-1">
                           {reqItem.commodity?.name} ({reqItem.unit})
                         </div>
                       </div>
                       <div className="w-24">
-                        <Label className="text-xs text-muted-foreground">Requested</Label>
+                        <Label className="text-xs text-muted-foreground">
+                          Requested
+                        </Label>
                         <div className="text-sm pt-1 px-3 py-1.5 bg-slate-200 dark:bg-slate-800 rounded-md">
                           {reqItem.quantity}
                         </div>
                       </div>
                       <div className="w-28">
-                        <Label className="text-xs text-muted-foreground">Allocate</Label>
-                        <Input 
-                          type="number" 
+                        <Label className="text-xs text-muted-foreground">
+                          Allocate
+                        </Label>
+                        <Input
+                          type="number"
                           min="0"
                           className="mt-1"
-                          value={allocatedItem.quantity} 
-                          onChange={(e) => handleQuantityChange(idx, parseInt(e.target.value) || 0)} 
+                          value={allocatedItem.quantity}
+                          onChange={(e) =>
+                            handleQuantityChange(
+                              idx,
+                              parseInt(e.target.value) || 0,
+                            )
+                          }
                         />
                       </div>
                     </div>
@@ -202,14 +242,20 @@ export default function CreateAllocationDialog() {
           )}
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsOpen(false)}
+            >
               Cancel
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={!selectedRequestId || createMutation.isPending}
             >
-              {createMutation.isPending ? "Allocating..." : "Dispatch Allocation"}
+              {createMutation.isPending
+                ? "Allocating..."
+                : "Dispatch Allocation"}
             </Button>
           </DialogFooter>
         </form>

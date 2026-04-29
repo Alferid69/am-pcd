@@ -6,9 +6,9 @@ const router = express.Router();
 
 router.use(auth);
 
-router
-  .route("/")
-  .get(notificationController.getAllNotifications);
+router.patch("/markAllAsRead", notificationController.markAllAsRead);
+
+router.route("/").get(notificationController.getAllNotifications);
 
 router
   .route("/:id")

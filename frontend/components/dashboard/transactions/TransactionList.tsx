@@ -12,6 +12,7 @@ import {
   Package,
   Activity,
   DollarSign,
+  Download,
 } from "lucide-react";
 import { fetchRetailerTransactions } from "../../../api/apiTransactions";
 import type { Transaction } from "../../dashboard/types";
@@ -41,12 +42,7 @@ export default function TransactionList({
   const [appliedEndDate, setAppliedEndDate] = useState("");
 
   const { data: transactions = [], isLoading } = useQuery<Transaction[]>({
-    queryKey: [
-      "transactions",
-      retailerId,
-      appliedStartDate,
-      appliedEndDate,
-    ],
+    queryKey: ["transactions", retailerId, appliedStartDate, appliedEndDate],
     queryFn: () =>
       fetchRetailerTransactions(retailerId, appliedStartDate, appliedEndDate),
     enabled: !!retailerId,
@@ -62,6 +58,50 @@ export default function TransactionList({
     setEndDate("");
     setAppliedStartDate("");
     setAppliedEndDate("");
+  };
+
+  const handleExportCSV = () => {
+    if (!filteredTransactions.length) return;
+
+    const headers = [
+      "Customer",
+      // "ID Card",
+      "Commodity",
+      "Qty (kg)",
+      "Unit Price",
+      "Total Price",
+      "Date",
+    ];
+    const csvContent = [
+      headers.join(","),
+      ...filteredTransactions.map((t) => {
+        const customer = `${t.customer?.firstName || ""} ${t.customer?.lastName || ""}`;
+        // const idCard = t.customer?.fayda || "";
+        const commodity = t.commodity?.name || "";
+        const qty = t.amount;
+        const price = t.commodity?.price || 0;
+        const total = (t.amount || 0) * price;
+        const date = t.createdAt
+          ? format(new Date(t.createdAt), "yyyy-MM-dd HH:mm")
+          : "";
+        return [customer, commodity, qty, price, total, date]
+          .map((val) => `"${val}"`)
+          .join(",");
+      }),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `Transactions_${new Date().toISOString().split("T")[0]}.csv`,
+    );
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const filteredTransactions = transactions.filter((t) => {
@@ -80,7 +120,10 @@ export default function TransactionList({
   // Calculate summaries
   const totalTransactions = filteredTransactions.length;
 
-  const commodityVolumes: Record<string, { volume: number; unit: string; revenue: number }> = {};
+  const commodityVolumes: Record<
+    string,
+    { volume: number; unit: string; revenue: number }
+  > = {};
   filteredTransactions.forEach((t) => {
     if (t.commodity?.name) {
       if (!commodityVolumes[t.commodity.name]) {
@@ -91,13 +134,14 @@ export default function TransactionList({
         };
       }
       commodityVolumes[t.commodity.name].volume += t.amount || 0;
-      commodityVolumes[t.commodity.name].revenue += (t.amount || 0) * (t.commodity.price || 0);
+      commodityVolumes[t.commodity.name].revenue +=
+        (t.amount || 0) * (t.commodity.price || 0);
     }
   });
 
   const totalRevenue = Object.values(commodityVolumes).reduce(
     (sum, data) => sum + data.revenue,
-    0
+    0,
   );
 
   const getStatusBadge = (status: string) => {
@@ -148,7 +192,9 @@ export default function TransactionList({
               {totalRevenue.toLocaleString("en-ET", {
                 maximumFractionDigits: 2,
               })}{" "}
-              <span className="text-base font-normal text-muted-foreground">ETB</span>
+              <span className="text-base font-normal text-muted-foreground">
+                ETB
+              </span>
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               Across all commodities
@@ -177,7 +223,10 @@ export default function TransactionList({
               <p className="text-xs text-muted-foreground mt-1">
                 Revenue:{" "}
                 <span className="font-medium text-(--bpds-on-surface)">
-                  {data.revenue.toLocaleString("en-ET", { maximumFractionDigits: 2 })} ETB
+                  {data.revenue.toLocaleString("en-ET", {
+                    maximumFractionDigits: 2,
+                  })}{" "}
+                  ETB
                 </span>
               </p>
             </CardContent>
@@ -200,7 +249,9 @@ export default function TransactionList({
 
           <div className="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto">
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <span className="text-sm text-muted-foreground font-medium hidden sm:inline">From:</span>
+              <span className="text-sm text-muted-foreground font-medium hidden sm:inline">
+                From:
+              </span>
               <Input
                 type="date"
                 value={startDate}
@@ -209,7 +260,9 @@ export default function TransactionList({
               />
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <span className="text-sm text-muted-foreground font-medium hidden sm:inline">To:</span>
+              <span className="text-sm text-muted-foreground font-medium hidden sm:inline">
+                To:
+              </span>
               <Input
                 type="date"
                 value={endDate}
@@ -218,14 +271,31 @@ export default function TransactionList({
               />
             </div>
             <div className="flex gap-2 w-full sm:w-auto">
-              <Button onClick={handleApplyDates} variant="default" className="w-full sm:w-auto">
+              <Button
+                onClick={handleApplyDates}
+                variant="default"
+                className="w-full sm:w-auto"
+              >
                 <Filter className="w-4 h-4 mr-2" /> Filter
               </Button>
               {(appliedStartDate || appliedEndDate) && (
-                <Button onClick={handleClearDates} variant="outline" className="w-full sm:w-auto px-3">
+                <Button
+                  onClick={handleClearDates}
+                  variant="outline"
+                  className="w-full sm:w-auto px-3"
+                >
                   Clear
                 </Button>
               )}
+              <Button
+                variant="outline"
+                onClick={handleExportCSV}
+                className="w-full sm:w-auto px-3"
+                disabled={filteredTransactions.length === 0}
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export
+              </Button>
             </div>
           </div>
         </CardContent>

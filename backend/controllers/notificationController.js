@@ -17,7 +17,9 @@ exports.getAllNotifications = catchAsync(async (req, res, next) => {
   // Allow merging with ?isRead=false from the frontend
   const dbQuery = { ...req.query, ...filter };
 
-  const notifications = await Notification.find(dbQuery).sort("-createdAt").populate("stockRequest");
+  const notifications = await Notification.find(dbQuery)
+    .sort("-createdAt")
+    .populate("stockRequest");
 
   res.status(200).json({
     status: "success",
@@ -25,6 +27,24 @@ exports.getAllNotifications = catchAsync(async (req, res, next) => {
     data: notifications,
   });
 });
-exports.getNotification = factory.getOne(Notification, { path: 'stockRequest' });
+
+exports.markAllAsRead = catchAsync(async (req, res, next) => {
+  let filter = { targetRole: req.user.role, isRead: false };
+
+  if (req.user.role === "woreda" || req.user.role === "retailer") {
+    filter.targetOfficeId = req.user.worksAt;
+  }
+
+  const result = await Notification.updateMany(filter, { isRead: true });
+
+  res.status(200).json({
+    status: "success",
+    message: `${result.modifiedCount} notifications marked as read`,
+  });
+});
+
+exports.getNotification = factory.getOne(Notification, {
+  path: "stockRequest",
+});
 exports.updateNotification = factory.updateOne(Notification);
 exports.deleteNotification = factory.deleteOne(Notification);

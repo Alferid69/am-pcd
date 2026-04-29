@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import {
   User,
@@ -51,21 +51,26 @@ function FeedbackBanner({
   );
 }
 
-export default function SettingsPage() {
-  const { user, userRole, refreshUser } = useAuth();
+type UserData = NonNullable<ReturnType<typeof useAuth>["user"]>;
 
-  // --- Profile form ---
+// Inner component: user is guaranteed non-null here, so state initialises from prop directly.
+function SettingsForm({ user, userRole, refreshUser }: {
+  user: UserData;
+  userRole: string;
+  refreshUser: () => Promise<void>;
+}) {
+  // Profile form — initialised once from the prop, no useEffect needed.
   const [profileForm, setProfileForm] = useState({
-    firstName: "",
-    lastName: "",
-    username: "",
+    firstName: user.firstName ?? "",
+    lastName: user.lastName ?? "",
+    username: user.username ?? "",
   });
   const [profileFeedback, setProfileFeedback] = useState<{
     type: "success" | "error";
     message: string;
   } | null>(null);
 
-  // --- Password form ---
+  // Password form
   const [passwordForm, setPasswordForm] = useState({
     password: "",
     newPassword: "",
@@ -77,17 +82,6 @@ export default function SettingsPage() {
   } | null>(null);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
-
-  // Prefill form with current user data
-  useEffect(() => {
-    if (user) {
-      setProfileForm({
-        firstName: user.firstName ?? "",
-        lastName: user.lastName ?? "",
-        username: user.username ?? "",
-      });
-    }
-  }, [user]);
 
   const profileMutation = useMutation({
     mutationFn: updateProfile,
@@ -119,14 +113,16 @@ export default function SettingsPage() {
     },
   });
 
+  const profileHasChanges =
+    profileForm.firstName !== (user.firstName ?? "") ||
+    profileForm.lastName  !== (user.lastName  ?? "") ||
+    profileForm.username  !== (user.username  ?? "");
+
   const handleProfileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!profileHasChanges) return;
     setProfileFeedback(null);
-    profileMutation.mutate({
-      firstName: profileForm.firstName,
-      lastName: profileForm.lastName,
-      username: profileForm.username,
-    });
+    profileMutation.mutate(profileForm);
   };
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
@@ -169,13 +165,13 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="flex items-center gap-4">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-(--bpds-primary-container) text-(--bpds-primary) text-2xl font-bold select-none">
-            {user?.firstName?.[0]?.toUpperCase() ?? "?"}
+            {user.firstName?.[0]?.toUpperCase() ?? "?"}
           </div>
           <div>
             <p className="font-semibold text-(--bpds-on-surface) text-lg">
-              {user?.firstName} {user?.lastName}
+              {user.firstName} {user.lastName}
             </p>
-            <p className="text-muted-foreground text-sm">@{user?.username}</p>
+            <p className="text-muted-foreground text-sm">@{user.username}</p>
             <div className="mt-1 flex items-center gap-2">
               <Shield className="h-3.5 w-3.5 text-indigo-500" />
               <Badge className="text-xs bg-indigo-100 text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400">
@@ -240,7 +236,7 @@ export default function SettingsPage() {
             </div>
 
             <div className="flex justify-end pt-2">
-              <Button type="submit" disabled={profileMutation.isPending}>
+              <Button type="submit" disabled={!profileHasChanges || profileMutation.isPending}>
                 <Save className="h-4 w-4 mr-2" />
                 {profileMutation.isPending ? "Saving..." : "Save Changes"}
               </Button>
@@ -333,5 +329,36 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+// Outer shell: waits for user to be loaded, then mounts SettingsForm.
+// The `key={user._id}` ensures the form re-mounts fresh if the user identity changes.
+export default function SettingsPage() {
+  const { user, userRole, refreshUser, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-20">
+        <p className="text-muted-foreground animate-pulse">Loading settings...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex justify-center py-20 text-muted-foreground">
+        Unable to load user data. Please refresh the page.
+      </div>
+    );
+  }
+
+  return (
+    <SettingsForm
+      key={user._id}
+      user={user}
+      userRole={userRole}
+      refreshUser={refreshUser}
+    />
   );
 }

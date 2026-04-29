@@ -1,6 +1,11 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
+import React, {
+  useMemo,
+  useState,
+  useEffect,
+  useSyncExternalStore,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "next-themes";
 import { usePathname, useRouter } from "next/navigation";
@@ -8,7 +13,6 @@ import DashboardHeader from "../../components/dashboard/Header";
 import DashboardSidebar from "../../components/dashboard/Sidebar";
 import {
   baseNavItems,
-  isRoleKey,
   roleLabels,
   roleNavMap,
 } from "../../components/dashboard/data";
@@ -38,11 +42,12 @@ export default function DashboardLayout({
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [notificationCount] = useState(3);
   const { userRole, userName, isLoading } = useAuth();
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   const navItems = useMemo(
     () => roleNavMap[userRole] ?? baseNavItems,
@@ -96,7 +101,6 @@ export default function DashboardLayout({
       </div>
     );
   }
-
 
   return (
     <div className="min-h-screen bg-(--bpds-surface) text-(--bpds-on-surface)">

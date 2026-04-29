@@ -1,10 +1,17 @@
 "use client";
 
 import React from "react";
-import { format } from "date-fns";
-import { PieChart, CheckCircle2, Truck, Plus } from "lucide-react";
+import {
+  PieChart,
+  CheckCircle2,
+  Truck,
+  Plus,
+} from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchAllocations, updateAllocationStatus } from "../../../api/apiAllocations";
+import {
+  fetchAllocations,
+  updateAllocationStatus,
+} from "../../../api/apiAllocations";
 import type { Allocation } from "../types";
 import { useAuth } from "../../../contexts/AuthContext";
 import {
@@ -19,6 +26,7 @@ import { Button } from "../../ui/button";
 import { Card, CardContent } from "../../ui/card";
 import { Badge } from "../../ui/badge";
 import CreateAllocationDialog from "./CreateAllocationDialog";
+import { format } from "date-fns";
 
 export default function AllocationsView() {
   const queryClient = useQueryClient();
@@ -26,12 +34,15 @@ export default function AllocationsView() {
 
   const { data: allocations = [], isLoading } = useQuery<Allocation[]>({
     queryKey: ["allocations"],
-    queryFn: fetchAllocations,
+    queryFn: () => fetchAllocations(),
   });
 
   const deliverMutation = useMutation({
     mutationFn: (id: string) =>
-      updateAllocationStatus(id, { status: "DELIVERED", deliveryDate: new Date().toISOString() }),
+      updateAllocationStatus(id, {
+        status: "DELIVERED",
+        deliveryDate: new Date().toISOString(),
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["allocations"] });
     },
@@ -57,7 +68,7 @@ export default function AllocationsView() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-(--bpds-on-surface) flex items-center gap-2">
             <PieChart className="w-6 h-6 text-(--bpds-primary)" /> Allocations
@@ -66,10 +77,10 @@ export default function AllocationsView() {
             Track and manage physical stock shipments to cooperatives.
           </p>
         </div>
-        
-        {canCreate && (
-          <CreateAllocationDialog />
-        )}
+
+        <div className="flex items-center gap-4">
+          {canCreate && <CreateAllocationDialog />}
+        </div>
       </div>
 
       <Card className="shadow-(--bpds-shadow-level-1) border-(--bpds-outline-variant)">
@@ -81,19 +92,27 @@ export default function AllocationsView() {
                 <TableHead>Destination</TableHead>
                 <TableHead>Shipped Items</TableHead>
                 <TableHead>Status</TableHead>
-                {isWoreda && <TableHead className="text-right">Actions</TableHead>}
+                {isWoreda && (
+                  <TableHead className="text-right">Actions</TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={isWoreda ? 5 : 4} className="h-24 text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={isWoreda ? 5 : 4}
+                    className="h-24 text-center text-muted-foreground"
+                  >
                     Loading allocations...
                   </TableCell>
                 </TableRow>
               ) : allocations.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={isWoreda ? 5 : 4} className="h-24 text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={isWoreda ? 5 : 4}
+                    className="h-24 text-center text-muted-foreground"
+                  >
                     No allocations found.
                   </TableCell>
                 </TableRow>
@@ -108,7 +127,9 @@ export default function AllocationsView() {
                         {allocation.retailerCooperative?.name}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        Woreda: {allocation.retailerCooperative?.woredaOffice?.name || "N/A"}
+                        Woreda:{" "}
+                        {allocation.retailerCooperative?.woredaOffice?.name ||
+                          "N/A"}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -118,7 +139,8 @@ export default function AllocationsView() {
                             <span className="font-semibold text-(--bpds-on-surface)">
                               {item.quantity}
                             </span>{" "}
-                            {item.commodity?.bulkUnit || "units"} of {item.commodity?.name}
+                            {item.commodity?.bulkUnit || "units"} of{" "}
+                            {item.commodity?.name}
                           </span>
                         ))}
                       </div>
@@ -131,11 +153,15 @@ export default function AllocationsView() {
                             size="sm"
                             variant="outline"
                             className="border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800 dark:border-green-900 dark:text-green-400 dark:hover:bg-green-950/50"
-                            onClick={() => deliverMutation.mutate(allocation._id)}
+                            onClick={() =>
+                              deliverMutation.mutate(allocation._id)
+                            }
                             disabled={deliverMutation.isPending}
                           >
                             <CheckCircle2 className="w-4 h-4 mr-2" />
-                            {deliverMutation.isPending ? "Confirming..." : "Confirm Delivery"}
+                            {deliverMutation.isPending
+                              ? "Confirming..."
+                              : "Confirm Delivery"}
                           </Button>
                         )}
                       </TableCell>

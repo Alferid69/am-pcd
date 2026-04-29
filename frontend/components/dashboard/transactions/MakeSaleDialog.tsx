@@ -140,7 +140,7 @@ export default function MakeSaleDialog() {
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select commodity">
-                  {selectedCommodity?.commodity.name}
+                  {selectedCommodity?.commodity.name || (formData.commodity ? "Unknown Commodity" : "")}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
@@ -155,7 +155,7 @@ export default function MakeSaleDialog() {
                       value={ac.commodity._id}
                       disabled={ac.quantity <= 0}
                     >
-                      {ac.commodity.name} ({ac.quantity} {ac.commodity.baseUnit} available) - {ac.commodity.price} ETB
+                      {`${ac.commodity.name} (${ac.quantity} ${ac.commodity.baseUnit} available) - ${ac.commodity.price} ETB`}
                     </SelectItem>
                   ))
                 )}

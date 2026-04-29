@@ -65,17 +65,16 @@ const stockRequestSchema = new mongoose.Schema(
         },
       },
     ],
-    
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Mongoose Document Middleware: Generates a purely visual Notification on Status Change
 stockRequestSchema.pre("save", async function () {
-  // Only trigger this logic if the 'status' field was actually modified during this save
-  if (!this.isModified("status")) return;
+  // Only trigger this logic if the document is newly created OR the 'status' field was actually modified during this save
+  if (!this.isNew && !this.isModified("status")) return;
 
   let targetRole;
   let message;
@@ -87,7 +86,9 @@ stockRequestSchema.pre("save", async function () {
       targetRole = "woreda";
       message = "A new Stock Request is waiting for your approval.";
       // Fetch the RetailerCooperative to find out which specific Woreda it resides in
-      const retailer = await mongoose.model("RetailerCooperative").findById(this.retailerCooperative);
+      const retailer = await mongoose
+        .model("RetailerCooperative")
+        .findById(this.retailerCooperative);
       if (retailer) {
         targetOfficeId = retailer.woredaOffice; // Point alert only to this specific Woreda
       }
@@ -101,7 +102,8 @@ stockRequestSchema.pre("save", async function () {
 
     case "PENDING_BUREAU":
       targetRole = "bureau";
-      message = "Zone has approved a Stock Request. Pending final Bureau review.";
+      message =
+        "Zone has approved a Stock Request. Pending final Bureau review.";
       // Single Bureau, targetOfficeId not strictly required
       break;
 
@@ -113,7 +115,8 @@ stockRequestSchema.pre("save", async function () {
 
     case "REJECTED":
       targetRole = "retailer";
-      message = "Your Stock Request was rejected. Please check the request timeline for reasons.";
+      message =
+        "Your Stock Request was rejected. Please check the request timeline for reasons.";
       targetOfficeId = this.retailerCooperative; // Route back to the exact requesting Retailer
       break;
   }
@@ -125,15 +128,14 @@ stockRequestSchema.pre("save", async function () {
       targetRole: targetRole,
       message: message,
     };
-    
+
     // Only attach targetOfficeId if it was defined
     if (targetOfficeId) {
-       notificationPayload.targetOfficeId = targetOfficeId;
+      notificationPayload.targetOfficeId = targetOfficeId;
     }
 
     await Notification.create(notificationPayload);
   }
-
 });
 
 const StockRequest = mongoose.model("StockRequest", stockRequestSchema);

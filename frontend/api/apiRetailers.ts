@@ -9,3 +9,10 @@ export const fetchRetailerById = async (id: string) => {
   const response = await apiClient.get(`/retailerCooperatives/${id}`);
   return response.data.data;
 };
+
+export const fetchRetailerPerformance = async (id: string) => {
+  const response = await apiClient.get(
+    `/retailerCooperatives/${id}/performance`,
+  );
+  return response.data.data;
+};

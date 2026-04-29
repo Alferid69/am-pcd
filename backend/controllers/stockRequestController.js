@@ -101,7 +101,14 @@ exports.getAllStockRequests = catchAsync(async (req, res, next) => {
   // Merge the security filter with any query params the frontend sends (like ?status=PENDING_WOREDA)
   const dbQuery = { ...req.query, ...filter };
 
-  let query = StockRequest.find(dbQuery).populate(popOptions);
+  // Sorting
+  let sortBy = "-createdAt"; // Default
+  if (req.query.sort) {
+    sortBy = req.query.sort.split(",").join(" ");
+  }
+  delete dbQuery.sort;
+
+  let query = StockRequest.find(dbQuery).sort(sortBy).populate(popOptions);
   const docs = await query;
 
   res.status(200).json({

@@ -62,13 +62,21 @@ const getStatusBadge = (status: string) => {
         </Badge>
       );
     case "APPROVED":
-    case "FULFILLED":
       return (
         <Badge
           variant="default"
           className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-500"
         >
           <CheckCircle2 className="w-3 h-3 mr-1" /> Approved
+        </Badge>
+      );
+    case "FULFILLED":
+      return (
+        <Badge
+          variant="default"
+          className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-500"
+        >
+          <CheckCircle2 className="w-3 h-3 mr-1" /> Fulfilled
         </Badge>
       );
     case "REJECTED":
@@ -117,15 +125,16 @@ function CommodityItemRows({
                 onValueChange={(val) => onItemChange(index, "commodity", val!)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select commodity" />
+                  <SelectValue placeholder="Select commodity">
+                    {selectedCommodity?.name || (item.commodity ? "Unknown Commodity" : "")}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {commodities.map((c) => {
                     const isBlocked = blockedCommodityIds.has(c._id) && c._id !== item.commodity;
                     return (
                       <SelectItem key={c._id} value={c._id} disabled={isBlocked}>
-                        {c.name}
-                        {isBlocked && " (Pending)"}
+                        {c.name}{isBlocked ? " (Pending)" : ""}
                       </SelectItem>
                     );
                   })}

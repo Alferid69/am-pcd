@@ -1,4 +1,5 @@
 const Allocation = require("../models/Allocation");
+const StockRequest = require("../models/StockRequest");
 const RetailerCooperative = require("../models/RetailerCooperative");
 const factory = require("./handlerFactory");
 const catchAsync = require("../utils/catchAsync");
@@ -6,18 +7,46 @@ const AppError = require("../utils/appError");
 
 // Setup query population
 const popOptions = [
-  { 
-    path: "retailerCooperative", 
+  {
+    path: "retailerCooperative",
     select: "name woredaOffice",
-    populate: { path: "woredaOffice", select: "name" }
+    populate: { path: "woredaOffice", select: "name" },
   },
   { path: "allocatedItems.commodity", select: "name baseUnit bulkUnit" },
 ];
 
 exports.createAllocation = catchAsync(async (req, res, next) => {
+  const stockReq = await StockRequest.findById(req.body.stockRequest);
+
+  if (!stockReq) {
+    return next(new AppError("Related Stock Request not found.", 404));
+  }
+  console.log("Stock Req just before FULFILLED check: ", stockReq);
+
+  if (stockReq.status === "FULFILLED") {
+    return next(
+      new AppError(
+        "You cannot allocate items for a Stock Request that is already fulfilled.",
+        400,
+      ),
+    );
+  }
+
   // Automatically record which Bureau admin created the allocation
   req.body.allocatedBy = req.user._id;
   const doc = await Allocation.create(req.body);
+
+  // Sync FULFILLED status immediately rather than relying on Mongoose post('save') which can silence errors
+  stockReq.status = "FULFILLED";
+  stockReq.timeline.push({
+    actor: req.user._id,
+    role: req.user.role || "bureau",
+    action: "ALLOCATED",
+    remarks: "Allocation has been dispatched by Bureau",
+  });
+
+  console.log("Stock REQ just before saving: ",stockReq);
+  await stockReq.save();
 
   res.status(201).json({
     status: "success",
@@ -42,7 +71,14 @@ exports.getAllAllocations = catchAsync(async (req, res, next) => {
 
   const dbQuery = { ...req.query, ...filter };
 
-  let query = Allocation.find(dbQuery).populate(popOptions);
+  // Sorting
+  let sortBy = "-createdAt"; // Default
+  if (req.query.sort) {
+    sortBy = req.query.sort.split(",").join(" ");
+  }
+  delete dbQuery.sort;
+
+  let query = Allocation.find(dbQuery).sort(sortBy).populate(popOptions);
   const docs = await query;
 
   res.status(200).json({

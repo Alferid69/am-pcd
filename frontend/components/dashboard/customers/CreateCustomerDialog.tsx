@@ -115,6 +115,7 @@ export default function CreateCustomerDialog() {
       ...formData,
       age: Number(formData.age),
       woreda: woredaId,
+      status: "available",
     };
 
     createMutation.mutate(payload);
@@ -122,9 +123,7 @@ export default function CreateCustomerDialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger
-        render={<Button className="w-full sm:w-auto" />}
-      >
+      <DialogTrigger render={<Button className="w-full sm:w-auto" />}>
         <Plus className="mr-2 h-4 w-4" />
         Add Customer
       </DialogTrigger>
@@ -132,8 +131,8 @@ export default function CreateCustomerDialog() {
         <DialogHeader>
           <DialogTitle>Register New Customer</DialogTitle>
           <DialogDescription>
-            Enter the customer&lsquo;s details including their 16-digit Fayda National
-            ID.
+            Enter the customer&lsquo;s details including their 16-digit Fayda
+            National ID.
           </DialogDescription>
         </DialogHeader>
 
@@ -173,7 +172,9 @@ export default function CreateCustomerDialog() {
               <Label htmlFor="gender">Gender</Label>
               <Select
                 value={formData.gender}
-                onValueChange={(value) => handleSelectChange("gender", value as "male" | "female")}
+                onValueChange={(value) =>
+                  handleSelectChange("gender", value as "male" | "female")
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select gender" />

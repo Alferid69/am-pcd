@@ -19,6 +19,7 @@ const stockRequestsRouter = require("./routers/stockRequestsRouter");
 const notificationsRouter = require("./routers/notificationsRouter");
 const allocationsRouter = require("./routers/allocationRouter");
 const transactionsRouter = require("./routers/transactionsRouter");
+const overviewRouter = require("./routers/overviewRouter");
 
 const AppError = require("./utils/appError");
 
@@ -49,6 +50,7 @@ app.use("/api/v1/stockRequests", stockRequestsRouter);
 app.use("/api/v1/notifications", notificationsRouter);
 app.use("/api/v1/allocations", allocationsRouter);
 app.use("/api/v1/transactions", transactionsRouter);
+app.use("/api/v1/overview", overviewRouter);
 
 app.all(/.*/, (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));

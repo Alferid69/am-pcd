@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../../contexts/AuthContext";
 import CustomersView from "../../../components/dashboard/customers/CustomersView";
@@ -8,11 +8,12 @@ import CustomersView from "../../../components/dashboard/customers/CustomersView
 export default function CustomersPage() {
   const { userRole: role, isLoading } = useAuth();
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   useEffect(() => {
     // Only redirect after component has mounted on the client to avoid hydration mismatch
