@@ -32,12 +32,21 @@ export const baseNavItems: NavItem[] = [
     icon: "map_pin",
     group: "entities",
   },
+  {
+    key: "users",
+    labelKey: "dashboard.nav.users",
+    icon: "account_circle",
+    group: "system",
+  },
   { key: "settings", labelKey: "dashboard.nav.settings", icon: "settings", group: "system" },
 ];
+
+const HIDDEN_FROM_NON_ADMIN = new Set(["users"]);
 
 const HIDDEN_FROM_RETAILER = new Set([
   "customers",
   "woredas",
+  "users"
 ]);
 
 const retailerNavItems = baseNavItems.filter(
@@ -45,15 +54,19 @@ const retailerNavItems = baseNavItems.filter(
 );
 
 // Woredas page is only relevant for zone/bureau/admin oversight roles.
-const HIDDEN_FROM_WOREDA = new Set(["woredas"]);
+const HIDDEN_FROM_WOREDA = new Set(["woredas", "users"]);
 const woredaNavItems = baseNavItems.filter(
   (item) => !HIDDEN_FROM_WOREDA.has(item.key)
 );
 
+const nonAdminNavItems = baseNavItems.filter(
+  (item) => !HIDDEN_FROM_NON_ADMIN.has(item.key)
+);
+
 export const roleNavMap: Record<RoleKey, NavItem[]> = {
   admin: baseNavItems,
-  bureau: baseNavItems,
-  zone: baseNavItems,
+  bureau: nonAdminNavItems,
+  zone: nonAdminNavItems,
   woreda: woredaNavItems,
   retailer: retailerNavItems,
 };

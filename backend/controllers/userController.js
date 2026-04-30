@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const catchAsync = require("../utils/catchAsync");
+const AppError = require("../utils/appError");
 const factory = require("./handlerFactory");
 
 exports.getAllUsers = factory.getAll(User);
@@ -44,3 +45,37 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     },
   });
 });
+
+exports.updateUser = factory.updateOne(User);
+exports.deleteUser = factory.deleteOne(User);
+
+exports.adminCreateUser = catchAsync(async (req, res, next) => {
+  const newUser = await User.create(req.body);
+  newUser.password = undefined;
+
+  res.status(201).json({
+    status: 'success',
+    data: {
+      user: newUser
+    }
+  });
+});
+
+exports.adminResetPassword = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.params.id);
+  if (!user) {
+    return next(new AppError('No user found with that ID', 404));
+  }
+
+  if (!req.body.newPassword) {
+    return next(new AppError('Please provide a newPassword', 400));
+  }
+
+  user.password = req.body.newPassword;
+  await user.save({ validateBeforeSave: false });
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Password reset successfully'
+  });
+});
