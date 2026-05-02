@@ -48,6 +48,7 @@ const createSendToken = (user, statusCode, res) => {
     expires: new Date(
       Date.now() + 7 * 24 * 60 * 60 * 1000
     ),
+    // expires: new Date(new Date().getTime() + 1000 * 60), // 1 minute for testing
     httpOnly: true,
     secure: true, // false in development
     sameSite: "Lax",

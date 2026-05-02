@@ -140,7 +140,11 @@ export default function MakeSaleDialog() {
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select commodity">
-                  {selectedCommodity?.commodity.name || (formData.commodity ? "Unknown Commodity" : "")}
+                  {selectedCommodity ? (
+                    <span>{selectedCommodity.commodity.name}</span>
+                  ) : (
+                    formData.commodity ? <span>Unknown Commodity</span> : null
+                  )}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>

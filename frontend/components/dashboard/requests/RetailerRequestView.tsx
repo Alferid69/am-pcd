@@ -126,7 +126,11 @@ function CommodityItemRows({
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select commodity">
-                    {selectedCommodity?.name || (item.commodity ? "Unknown Commodity" : "")}
+                    {selectedCommodity ? (
+                      <span>{selectedCommodity.name}</span>
+                    ) : (
+                      item.commodity ? <span>Unknown Commodity</span> : null
+                    )}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>

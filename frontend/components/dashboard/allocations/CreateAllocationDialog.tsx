@@ -163,7 +163,14 @@ export default function CreateAllocationDialog() {
                   placeholder={
                     isLoadingRequests ? "Loading..." : "Select a request..."
                   }
-                />
+                >
+                  {selectedRequest && (
+                    <span>
+                      {selectedRequest.retailerCooperative?.name} —{" "}
+                      {new Date(selectedRequest.createdAt).toLocaleDateString()}
+                    </span>
+                  )}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {approvedRequests.length === 0 && !isLoadingRequests ? (

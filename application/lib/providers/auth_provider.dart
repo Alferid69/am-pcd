@@ -14,6 +14,7 @@ class AuthProvider with ChangeNotifier {
   bool get isAuthenticated => _token != null;
 
   AuthProvider() {
+    ApiService.onUnauthorized = logout;
     _tryAutoLogin();
   }
 

@@ -43,8 +43,9 @@ export default function WoredasPage() {
     );
   }
 
-  const filteredWoredas = (woredas as any[]).filter((w) =>
-    w.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const safeWoredas = Array.isArray(woredas) ? woredas : ((woredas as any)?.data || (woredas as any)?.docs || []);
+  const filteredWoredas = safeWoredas.filter((w: any) =>
+    (w?.name || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (

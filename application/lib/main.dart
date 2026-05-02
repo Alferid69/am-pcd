@@ -3,16 +3,20 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import './providers/auth_provider.dart';
 import './providers/theme_provider.dart';
+import './providers/notification_provider.dart';
+import './services/local_notification_service.dart';
 import './screens/login_screen.dart';
 import './screens/main_navigation.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await LocalNotificationService.init();
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
       ],
       child: const MyApp(),
     ),
@@ -63,14 +67,14 @@ class MyApp extends StatelessWidget {
           ),
           navigationBarTheme: NavigationBarThemeData(
             indicatorColor: const Color(0xFF4F46E5).withOpacity(0.1),
-            iconTheme: MaterialStateProperty.resolveWith((states) {
-              if (states.contains(MaterialState.selected)) {
+            iconTheme: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.selected)) {
                 return const IconThemeData(color: Color(0xFF4F46E5));
               }
               return const IconThemeData(color: Color(0xFF64748B));
             }),
-            labelTextStyle: MaterialStateProperty.resolveWith((states) {
-              if (states.contains(MaterialState.selected)) {
+            labelTextStyle: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.selected)) {
                 return const TextStyle(color: Color(0xFF4F46E5), fontWeight: FontWeight.bold);
               }
               return const TextStyle(color: Color(0xFF64748B));
@@ -110,14 +114,14 @@ class MyApp extends StatelessWidget {
           ),
           navigationBarTheme: NavigationBarThemeData(
             indicatorColor: const Color(0xFF6366F1).withOpacity(0.2),
-            iconTheme: MaterialStateProperty.resolveWith((states) {
-              if (states.contains(MaterialState.selected)) {
+            iconTheme: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.selected)) {
                 return const IconThemeData(color: Color(0xFF6366F1));
               }
               return const IconThemeData(color: Colors.white70);
             }),
-            labelTextStyle: MaterialStateProperty.resolveWith((states) {
-              if (states.contains(MaterialState.selected)) {
+            labelTextStyle: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.selected)) {
                 return const TextStyle(color: Color(0xFF6366F1), fontWeight: FontWeight.bold);
               }
               return const TextStyle(color: Colors.white70);

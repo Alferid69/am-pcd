@@ -16,3 +16,8 @@ export const fetchRetailerPerformance = async (id: string) => {
   );
   return response.data.data;
 };
+
+export const createRetailerCooperative = async (data: { name: string; woredaOffice: string; location?: string }) => {
+  const response = await apiClient.post("/retailerCooperatives", data);
+  return response.data.data;
+};

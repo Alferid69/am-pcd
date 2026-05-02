@@ -26,8 +26,11 @@ import { updateCustomer } from "../../../api/apiCustomers";
 import type { Customer, CreateCustomerPayload } from "../types";
 import { useAuth } from "../../../contexts/AuthContext";
 
+import { fetchWoredas } from "../../../api/apiWoredas";
+import { useQuery } from "@tanstack/react-query";
+
 export default function EditCustomerDialog({ customer }: { customer: Customer }) {
-  const { worksAt: woredaId } = useAuth();
+  const { worksAt: woredaId, userRole } = useAuth();
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -41,6 +44,13 @@ export default function EditCustomerDialog({ customer }: { customer: Customer })
     phone: customer.phone,
     kebele: customer.kebele || "",
     houseNumber: customer.houseNumber || "",
+    woreda: typeof customer.woreda === "string" ? customer.woreda : (customer.woreda as any)?._id || "",
+  });
+
+  const { data: woredas = [], isLoading: isLoadingWoredas } = useQuery({
+    queryKey: ["woredas"],
+    queryFn: fetchWoredas,
+    enabled: userRole === "admin",
   });
 
   const updateMutation = useMutation({
@@ -94,7 +104,9 @@ export default function EditCustomerDialog({ customer }: { customer: Customer })
       return;
     }
 
-    if (!woredaId) {
+    const finalWoredaId = userRole === "admin" ? formData.woreda : woredaId;
+
+    if (!finalWoredaId) {
       setSubmitError("Woreda context not found. Please log in again.");
       return;
     }
@@ -102,7 +114,7 @@ export default function EditCustomerDialog({ customer }: { customer: Customer })
     const payload: Partial<CreateCustomerPayload> = {
       ...formData,
       age: Number(formData.age),
-      woreda: woredaId,
+      woreda: finalWoredaId,
     };
 
     updateMutation.mutate(payload);
@@ -138,6 +150,32 @@ export default function EditCustomerDialog({ customer }: { customer: Customer })
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {userRole === "admin" && (
+            <div className="space-y-2">
+              <Label htmlFor="woreda">Woreda Office</Label>
+              <Select
+                value={formData.woreda}
+                onValueChange={(val) => handleSelectChange("woreda", val as string)}
+                disabled={isLoadingWoredas}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={isLoadingWoredas ? "Loading woredas..." : "Select Woreda"}>
+                    {formData.woreda
+                      ? woredas.find((w: any) => w._id === formData.woreda)?.name || "Select Woreda"
+                      : null}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {woredas.map((w: any) => (
+                    <SelectItem key={w._id} value={w._id}>
+                      {w.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">First Name</Label>

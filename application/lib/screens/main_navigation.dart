@@ -7,6 +7,7 @@ import 'inventory_screen.dart';
 import 'notifications_screen.dart';
 import '../providers/theme_provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/notification_provider.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -66,7 +67,7 @@ class _MainNavigationState extends State<MainNavigation> {
           onDestinationSelected: (index) => setState(() => _selectedIndex = index),
           backgroundColor: Theme.of(context).cardTheme.color,
           indicatorColor: Theme.of(context).primaryColor.withOpacity(0.1),
-          destinations: const [
+          destinations:  [
             NavigationDestination(
               icon: Icon(LucideIcons.layoutDashboard),
               label: 'Overview',
@@ -80,7 +81,13 @@ class _MainNavigationState extends State<MainNavigation> {
               label: 'Requests',
             ),
             NavigationDestination(
-              icon: Icon(LucideIcons.bell),
+              icon: Consumer<NotificationProvider>(
+                builder: (context, np, _) => Badge(
+                  label: Text(np.unreadCount.toString()),
+                  isLabelVisible: np.unreadCount > 0,
+                  child: const Icon(LucideIcons.bell),
+                ),
+              ),
               label: 'Alerts',
             ),
           ],

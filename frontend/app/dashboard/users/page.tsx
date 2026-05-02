@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Edit2, KeyRound, Trash2, ShieldAlert } from "lucide-react";
+import { Plus, Edit2, KeyRound, Trash2, ShieldAlert, Search, Filter } from "lucide-react";
 import {
   getAllUsers,
   createUserAdmin,
@@ -55,6 +55,9 @@ export default function UsersPage() {
 
   const [selectedUser, setSelectedUser] = useState<any>(null);
   
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
+
   // Form states
   const [formData, setFormData] = useState({
     firstName: "",
@@ -187,6 +190,21 @@ export default function UsersPage() {
     }
   };
 
+  const filteredUsers = users?.filter((user: any) => {
+    const searchLower = searchTerm.toLowerCase();
+    const matchesSearch =
+      user.firstName?.toLowerCase().includes(searchLower) ||
+      user.lastName?.toLowerCase().includes(searchLower) ||
+      user.username?.toLowerCase().includes(searchLower) ||
+      user.email?.toLowerCase().includes(searchLower) ||
+      user.phone?.toLowerCase().includes(searchLower);
+      
+    const userRoleStr = typeof user.role === 'object' ? user.role.name : user.role;
+    const matchesRole = roleFilter === "all" || userRoleStr === roleFilter;
+
+    return matchesSearch && matchesRole;
+  }) || [];
+
   if (userRole !== "admin") {
     return (
       <div className="flex h-[80vh] flex-col items-center justify-center space-y-4">
@@ -215,6 +233,33 @@ export default function UsersPage() {
         </Button>
       </div>
 
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by name, username, email, or phone..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+        <div className="relative w-full sm:w-48">
+          <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <select
+            className="w-full h-10 rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+          >
+            <option value="all">All Roles</option>
+            <option value="admin">Admin</option>
+            <option value="bureau">Bureau</option>
+            <option value="zone">Zone</option>
+            <option value="woreda">Woreda</option>
+            <option value="retailer">Retailer</option>
+          </select>
+        </div>
+      </div>
+
       <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
         <Table>
           <TableHeader className="bg-muted/50">
@@ -233,14 +278,14 @@ export default function UsersPage() {
                   Loading users...
                 </TableCell>
               </TableRow>
-            ) : users?.length === 0 ? (
+            ) : filteredUsers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
                   No users found.
                 </TableCell>
               </TableRow>
             ) : (
-              users?.map((user: any) => (
+              filteredUsers.map((user: any) => (
                 <TableRow key={user._id} className="group transition-colors hover:bg-muted/30">
                   <TableCell className="font-medium">
                     {user.firstName} {user.lastName}

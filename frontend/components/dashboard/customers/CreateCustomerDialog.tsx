@@ -22,12 +22,14 @@ import {
   SelectValue,
 } from "../../ui/select";
 import { Input } from "../../ui/input";
-import { createCustomer } from "../../../api/apiCustomers";
+import { fetchWoredas } from "../../../api/apiWoredas";
 import type { CreateCustomerPayload } from "../types";
 import { useAuth } from "../../../contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { createCustomer } from "@/api/apiCustomers";
 
 export default function CreateCustomerDialog() {
-  const { worksAt: woredaId } = useAuth();
+  const { worksAt: woredaId, userRole } = useAuth();
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -41,6 +43,13 @@ export default function CreateCustomerDialog() {
     phone: "",
     kebele: "",
     houseNumber: "",
+    woreda: "",
+  });
+
+  const { data: woredas = [], isLoading: isLoadingWoredas } = useQuery({
+    queryKey: ["woredas"],
+    queryFn: fetchWoredas,
+    enabled: userRole === "admin",
   });
 
   const createMutation = useMutation({
@@ -57,6 +66,7 @@ export default function CreateCustomerDialog() {
         phone: "",
         kebele: "",
         houseNumber: "",
+        woreda: "",
       });
       setSubmitError(null);
     },
@@ -104,17 +114,18 @@ export default function CreateCustomerDialog() {
       return;
     }
 
-    // Get Woreda ID from auth context
+    // Get Woreda ID
+    const finalWoredaId = userRole === "admin" ? formData.woreda : woredaId;
 
-    if (!woredaId) {
-      setSubmitError("Woreda context not found. Please log in again.");
+    if (!finalWoredaId) {
+      setSubmitError("Please select a Woreda for this customer.");
       return;
     }
 
     const payload: CreateCustomerPayload = {
       ...formData,
       age: Number(formData.age),
-      woreda: woredaId,
+      woreda: finalWoredaId,
       status: "available",
     };
 
@@ -123,7 +134,7 @@ export default function CreateCustomerDialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger render={<Button className="w-full sm:w-auto" />}>
+      <DialogTrigger render={<Button className="bg-(--bpds-primary) hover:bg-(--bpds-primary)/90" />}>
         <Plus className="mr-2 h-4 w-4" />
         Add Customer
       </DialogTrigger>
@@ -144,6 +155,32 @@ export default function CreateCustomerDialog() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {userRole === "admin" && (
+            <div className="space-y-2">
+              <Label htmlFor="woreda">Woreda Office</Label>
+              <Select
+                value={formData.woreda}
+                onValueChange={(val) => handleSelectChange("woreda", val as string)}
+                disabled={isLoadingWoredas}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={isLoadingWoredas ? "Loading woredas..." : "Select Woreda"}>
+                    {formData.woreda
+                      ? woredas.find((w: any) => w._id === formData.woreda)?.name || "Select Woreda"
+                      : null}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {woredas.map((w: any) => (
+                    <SelectItem key={w._id} value={w._id}>
+                      {w.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">First Name</Label>

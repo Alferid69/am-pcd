@@ -26,6 +26,7 @@ const NAV_PATHS: Record<string, string> = {
   customers: "/dashboard/customers",
   retailerCooperatives: "/dashboard/retailer-cooperatives",
   woredas: "/dashboard/woredas",
+  entities: "/dashboard/entities",
   users: "/dashboard/users",
   settings: "/dashboard/settings",
 };

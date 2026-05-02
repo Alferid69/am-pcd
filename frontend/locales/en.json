@@ -26,6 +26,7 @@
   "dashboard.nav.transactions": "Transactions",
   "dashboard.nav.allocations": "Allocations",
   "dashboard.nav.customers": "Customers",
+  "dashboard.nav.entities": "Entities",
   "dashboard.nav.retailerCooperatives": "Retailer Cooperatives",
   "dashboard.nav.woredas": "Woredas",
   "dashboard.nav.users": "Users",

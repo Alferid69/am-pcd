@@ -39,6 +39,7 @@ export default function CustomersView() {
   const [woredaFilter, setWoredaFilter] = useState<string>(initialWoredaFilter);
 
   const isWoreda = userRole === "woreda";
+  const canManageCustomer = userRole === "woreda" || userRole === "admin";
   const canViewFilters =
     userRole === "zone" || userRole === "bureau" || userRole === "admin";
 
@@ -101,7 +102,7 @@ export default function CustomersView() {
           </p>
         </div>
 
-        {isWoreda && (
+        {canManageCustomer && (
           <div className="flex-shrink-0">
             <CreateCustomerDialog />
           </div>
@@ -206,7 +207,7 @@ export default function CustomersView() {
                           Details
                         </Button>
                       </Link>
-                      {isWoreda && <EditCustomerDialog customer={customer} />}
+                      {canManageCustomer && <EditCustomerDialog customer={customer} />}
                     </TableCell>
                   </TableRow>
                 ))
