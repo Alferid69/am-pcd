@@ -3,7 +3,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import { ThemeProvider } from 'next-themes';
-import '@/lib/i18n';
 
 import { AuthProvider } from '@/contexts/AuthContext';
 

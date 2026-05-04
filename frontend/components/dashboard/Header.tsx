@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useT } from "next-i18next/client";
 import {
   fetchUnreadNotifications,
   markNotificationAsRead,
@@ -49,6 +50,7 @@ export default function DashboardHeader({
   onToggleLanguage,
   onToggleTheme,
 }: DashboardHeaderProps) {
+  const { t } = useT("common");
   const queryClient = useQueryClient();
   const [showNotifications, setShowNotifications] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -170,7 +172,7 @@ export default function DashboardHeader({
                 <div className="bg-(--bpds-surface-container-low) px-4 py-3 border-b border-(--bpds-outline-variant) flex justify-between items-center">
                   <div className="flex gap-2 items-center">
                     <h3 className="font-semibold text-(--bpds-on-surface)">
-                      Notifications
+                      {t("dashboard.notifications")}
                     </h3>
                     <span className="text-xs font-semibold bg-(--bpds-error) text-(--bpds-on-error) px-2 py-0.5 rounded-full">
                       {notifications.length}
@@ -182,14 +184,19 @@ export default function DashboardHeader({
                       className="text-xs flex items-center gap-1 text-(--bpds-primary) hover:underline"
                       disabled={markAllAsReadMutation.isPending}
                     >
-                      <CheckCircle2 className="w-3 h-3" /> Mark all read
+                      <CheckCircle2 className="w-3 h-3" />{" "}
+                      {t("common.markAllRead", {
+                        defaultValue: "Mark all read",
+                      })}
                     </button>
                   )}
                 </div>
                 <div className="max-h-75 overflow-y-auto">
                   {notifications.length === 0 ? (
                     <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-                      No new notifications
+                      {t("common.noNotifications", {
+                        defaultValue: "No new notifications",
+                      })}
                     </div>
                   ) : (
                     <ul className="divide-y divide-(--bpds-outline-variant)">
@@ -214,7 +221,9 @@ export default function DashboardHeader({
                           <button
                             onClick={() => markAsReadMutation.mutate(notif._id)}
                             className="shrink-0 p-1.5 rounded-full bg-transparent hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-400 hover:text-green-600 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-                            title="Mark as read"
+                            title={t("common.markAsRead", {
+                              defaultValue: "Mark as read",
+                            })}
                           >
                             <Check className="w-4 h-4" />
                           </button>
@@ -238,7 +247,7 @@ export default function DashboardHeader({
                 {userName}
               </p>
               <p className="text-xs text-right text-(--bpds-primary)">
-                {roleLabel || "System Admin"}
+                {roleLabel || t("dashboard.roles.admin")}
               </p>
             </div>
             <CircleUserRound

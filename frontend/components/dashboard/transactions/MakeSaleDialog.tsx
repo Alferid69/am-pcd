@@ -25,8 +25,10 @@ import {
 import { fetchRetailerById } from "../../../api/apiRetailers";
 import { createTransaction } from "../../../api/apiTransactions";
 import { useAuth } from "../../../contexts/AuthContext";
+import { useT } from "next-i18next/client";
 
 export default function MakeSaleDialog() {
+  const { t } = useT("common");
   const { worksAt: retailerId } = useAuth();
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
@@ -61,7 +63,7 @@ export default function MakeSaleDialog() {
     },
     onError: (err: any) => {
       setSubmitError(
-        err?.response?.data?.message ?? "Transaction failed. Please try again."
+        err?.response?.data?.message ?? t("transactions.failed")
       );
     },
   });
@@ -71,12 +73,12 @@ export default function MakeSaleDialog() {
     setSubmitError(null);
 
     if (!formData.customerFayda || !formData.commodity || !formData.amount) {
-      setSubmitError("Please fill out all fields.");
+      setSubmitError(t("common.fillAllFields"));
       return;
     }
 
     if (formData.customerFayda.length !== 16) {
-      setSubmitError("Fayda number must be exactly 16 digits.");
+      setSubmitError(t("customers.faydaDigitsError"));
       return;
     }
 
@@ -98,13 +100,13 @@ export default function MakeSaleDialog() {
         }
       >
         <ShoppingCart className="w-5 h-5 mr-2" />
-        Make a Sale
+        {t("transactions.makeSale")}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Register New Sale</DialogTitle>
+          <DialogTitle>{t("transactions.registerNewSale")}</DialogTitle>
           <DialogDescription>
-            Enter the customer&apos;s Fayda ID and select the commodity.
+            {t("transactions.registerNewSaleDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -117,10 +119,10 @@ export default function MakeSaleDialog() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="customerFayda">Customer Fayda ID (16 digits)</Label>
+            <Label htmlFor="customerFayda">{t("customers.faydaIDDigits")}</Label>
             <Input
               id="customerFayda"
-              placeholder="e.g. 1234567890123456"
+              placeholder={t("customers.faydaPlaceholder")}
               value={formData.customerFayda}
               onChange={(e) =>
                 setFormData({ ...formData, customerFayda: e.target.value })
@@ -131,7 +133,7 @@ export default function MakeSaleDialog() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="commodity">Commodity</Label>
+            <Label htmlFor="commodity">{t("dashboard.table.commodity")}</Label>
             <Select
               value={formData.commodity}
               onValueChange={(value) =>
@@ -139,18 +141,18 @@ export default function MakeSaleDialog() {
               }
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select commodity">
+                <SelectValue placeholder={t("requests.selectCommodity")}>
                   {selectedCommodity ? (
                     <span>{selectedCommodity.commodity.name}</span>
                   ) : (
-                    formData.commodity ? <span>Unknown Commodity</span> : null
+                    formData.commodity ? <span>{t("requests.unknownCommodity")}</span> : null
                   )}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {availableCommodities.length === 0 ? (
                   <SelectItem value="none" disabled>
-                    No commodities available
+                    {t("transactions.noCommoditiesAvailable")}
                   </SelectItem>
                 ) : (
                   availableCommodities.map((ac: any) => (
@@ -159,7 +161,7 @@ export default function MakeSaleDialog() {
                       value={ac.commodity._id}
                       disabled={ac.quantity <= 0}
                     >
-                      {`${ac.commodity.name} (${ac.quantity} ${ac.commodity.baseUnit} available) - ${ac.commodity.price} ETB`}
+                      {`${ac.commodity.name} (${ac.quantity} ${ac.commodity.baseUnit} ${t("customers.available").toLowerCase()}) - ${ac.commodity.price} ETB`}
                     </SelectItem>
                   ))
                 )}
@@ -169,7 +171,7 @@ export default function MakeSaleDialog() {
 
           <div className="space-y-2">
             <Label htmlFor="amount">
-              Quantity {selectedUnit ? `(${selectedUnit})` : ""}
+              {t("dashboard.table.quantity")} {selectedUnit ? `(${selectedUnit})` : ""}
             </Label>
             <Input
               id="amount"
@@ -190,10 +192,10 @@ export default function MakeSaleDialog() {
               onClick={() => setIsOpen(false)}
               disabled={transactionMutation.isPending}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={transactionMutation.isPending}>
-              {transactionMutation.isPending ? "Processing..." : "Complete Sale"}
+              {transactionMutation.isPending ? t("common.processing") : t("transactions.completeSale")}
             </Button>
           </DialogFooter>
         </form>

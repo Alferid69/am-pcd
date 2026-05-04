@@ -2,10 +2,18 @@
 
 import React, { useState } from "react";
 import { format } from "date-fns";
-import { Users, CheckCircle2, XCircle, Search, Filter, Eye } from "lucide-react";
+import {
+  Users,
+  CheckCircle2,
+  XCircle,
+  Search,
+  Filter,
+  Eye,
+} from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useParams } from "next/navigation";
+import { useT } from "next-i18next/client";
 import {
   fetchCustomers,
   fetchCustomersByWoreda,
@@ -29,6 +37,9 @@ import EditCustomerDialog from "./EditCustomerDialog";
 import { Button } from "@/components/ui/button";
 
 export default function CustomersView() {
+  const params = useParams();
+  const lng = params?.lng || "en";
+  const { t } = useT("common");
   const { userRole, worksAt: woredaId } = useAuth();
   const searchParams = useSearchParams();
   const initialWoredaFilter = searchParams.get("woredaId") ?? "all";
@@ -68,8 +79,10 @@ export default function CustomersView() {
       c.fayda.includes(searchTerm) ||
       c.phone.includes(searchTerm);
     const matchesStatus = statusFilter === "all" || c.status === statusFilter;
-    const woredaIdStr = typeof c.woreda === 'string' ? c.woreda : (c.woreda as any)?._id;
-    const matchesWoreda = woredaFilter === "all" || woredaIdStr === woredaFilter;
+    const woredaIdStr =
+      typeof c.woreda === "string" ? c.woreda : (c.woreda as any)?._id;
+    const matchesWoreda =
+      woredaFilter === "all" || woredaIdStr === woredaFilter;
     return matchesSearch && matchesStatus && matchesWoreda;
   });
 
@@ -77,13 +90,13 @@ export default function CustomersView() {
     if (status === "available") {
       return (
         <Badge className="bg-green-100 text-green-800 hover:bg-green-100/80 dark:bg-green-900/30 dark:text-green-500 dark:hover:bg-green-900/40">
-          <CheckCircle2 className="w-3 h-3 mr-1" /> Available
+          <CheckCircle2 className="w-3 h-3 mr-1" /> {t("customers.available")}
         </Badge>
       );
     }
     return (
       <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100/80 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-800/80">
-        <XCircle className="w-3 h-3 mr-1" /> Taken
+        <XCircle className="w-3 h-3 mr-1" /> {t("customers.taken")}
       </Badge>
     );
   };
@@ -93,12 +106,11 @@ export default function CustomersView() {
       <div className="flex flex-col sm:flex-row justify-between sm:items-end gap-4">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-(--bpds-on-surface) flex items-center gap-2">
-            <Users className="w-6 h-6 text-(--bpds-primary)" /> Customers
+            <Users className="w-6 h-6 text-(--bpds-primary)" />{" "}
+            {t("dashboard.nav.customers")}
           </h2>
           <p className="text-muted-foreground mt-1 text-sm">
-            {isWoreda
-              ? "Manage customers in your Woreda."
-              : "Oversight of all registered customers across the regions."}
+            {isWoreda ? t("customers.manage") : t("customers.oversight")}
           </p>
         </div>
 
@@ -115,7 +127,7 @@ export default function CustomersView() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search by name, Fayda, or phone..."
+                placeholder={t("customers.searchPlaceholder")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-9"
@@ -128,9 +140,9 @@ export default function CustomersView() {
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as any)}
               >
-                <option value="all">All Statuses</option>
-                <option value="available">Available</option>
-                <option value="taken">Taken</option>
+                <option value="all">{t("customers.allStatuses")}</option>
+                <option value="available">{t("customers.available")}</option>
+                <option value="taken">{t("customers.taken")}</option>
               </select>
             </div>
             {canViewFilters && (
@@ -141,7 +153,7 @@ export default function CustomersView() {
                   value={woredaFilter}
                   onChange={(e) => setWoredaFilter(e.target.value)}
                 >
-                  <option value="all">All Woredas</option>
+                  <option value="all">{t("customers.allWoredas")}</option>
                   {woredas.map((w: any) => (
                     <option key={w._id} value={w._id}>
                       {w.name}
@@ -159,11 +171,13 @@ export default function CustomersView() {
           <Table>
             <TableHeader className="bg-(--bpds-surface-container-low)">
               <TableRow>
-                <TableHead>Fayda ID</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t("customers.faydaID")}</TableHead>
+                <TableHead>{t("common.name")}</TableHead>
+                <TableHead>{t("common.phone")}</TableHead>
+                <TableHead>{t("common.status")}</TableHead>
+                <TableHead className="text-right">
+                  {t("common.actions")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -173,7 +187,7 @@ export default function CustomersView() {
                     colSpan={5}
                     className="text-center py-10 text-muted-foreground"
                   >
-                    Loading customers...
+                    {t("common.loading")}
                   </TableCell>
                 </TableRow>
               ) : filteredCustomers.length === 0 ? (
@@ -182,7 +196,7 @@ export default function CustomersView() {
                     colSpan={5}
                     className="text-center py-10 text-muted-foreground"
                   >
-                    No customers found.
+                    {t("common.noData")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -197,17 +211,21 @@ export default function CustomersView() {
                     <TableCell>{customer.phone}</TableCell>
                     <TableCell>{getStatusBadge(customer.status)}</TableCell>
                     <TableCell className="text-right flex items-center justify-end gap-2">
-                      <Link href={`/dashboard/customers/${customer._id}`}>
+                      <Link
+                        href={`/${lng}/dashboard/customers/${customer._id}`}
+                      >
                         <Button
                           variant="outline"
                           size="sm"
                           className="text-gray-600 border-gray-200 hover:bg-gray-50 dark:text-gray-400 dark:border-gray-800 dark:hover:bg-gray-900/50"
                         >
                           <Eye className="h-4 w-4 mr-2" />
-                          Details
+                          {t("common.details")}
                         </Button>
                       </Link>
-                      {canManageCustomer && <EditCustomerDialog customer={customer} />}
+                      {canManageCustomer && (
+                        <EditCustomerDialog customer={customer} />
+                      )}
                     </TableCell>
                   </TableRow>
                 ))

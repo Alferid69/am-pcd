@@ -27,10 +27,12 @@ import type { CreateCustomerPayload } from "../types";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { createCustomer } from "@/api/apiCustomers";
+import { useT } from "next-i18next/client";
 
 export default function CreateCustomerDialog() {
   const { worksAt: woredaId, userRole } = useAuth();
   const queryClient = useQueryClient();
+  const { t } = useT("common");
   const [isOpen, setIsOpen] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -73,7 +75,7 @@ export default function CreateCustomerDialog() {
     onError: (err: any) => {
       setSubmitError(
         err?.response?.data?.message ??
-          "Failed to create customer. Please try again.",
+          t("customers.errorFailedToCreate"),
       );
     },
   });
@@ -98,7 +100,7 @@ export default function CreateCustomerDialog() {
 
     // Validate 16-digit Fayda
     if (!/^\d{16}$/.test(formData.fayda)) {
-      setSubmitError("Fayda number must be exactly 16 digits.");
+      setSubmitError(t("customers.errorFaydaDigits"));
       return;
     }
 
@@ -110,7 +112,7 @@ export default function CreateCustomerDialog() {
       !formData.kebele ||
       !formData.houseNumber
     ) {
-      setSubmitError("Please fill out all required fields.");
+      setSubmitError(t("customers.errorFillRequired"));
       return;
     }
 
@@ -118,7 +120,7 @@ export default function CreateCustomerDialog() {
     const finalWoredaId = userRole === "admin" ? formData.woreda : woredaId;
 
     if (!finalWoredaId) {
-      setSubmitError("Please select a Woreda for this customer.");
+      setSubmitError(t("customers.errorSelectWoreda"));
       return;
     }
 

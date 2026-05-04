@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Edit2, AlertCircle } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useT } from "next-i18next/client";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +31,7 @@ import { fetchWoredas } from "../../../api/apiWoredas";
 import { useQuery } from "@tanstack/react-query";
 
 export default function EditCustomerDialog({ customer }: { customer: Customer }) {
+  const { t } = useT("common");
   const { worksAt: woredaId, userRole } = useAuth();
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
@@ -63,7 +65,7 @@ export default function EditCustomerDialog({ customer }: { customer: Customer })
     onError: (err: any) => {
       setSubmitError(
         err?.response?.data?.message ??
-          "Failed to update customer. Please try again.",
+          t("common.errorUpdating", { defaultValue: "Failed to update customer. Please try again." }),
       );
     },
   });
@@ -88,7 +90,7 @@ export default function EditCustomerDialog({ customer }: { customer: Customer })
 
     // Validate 16-digit Fayda
     if (!/^\d{16}$/.test(formData.fayda)) {
-      setSubmitError("Fayda number must be exactly 16 digits.");
+      setSubmitError(t("customers.faydaError", { defaultValue: "Fayda number must be exactly 16 digits." }));
       return;
     }
 
@@ -100,14 +102,14 @@ export default function EditCustomerDialog({ customer }: { customer: Customer })
       !formData.kebele ||
       !formData.houseNumber
     ) {
-      setSubmitError("Please fill out all required fields.");
+      setSubmitError(t("common.fillAllFields", { defaultValue: "Please fill out all required fields." }));
       return;
     }
 
     const finalWoredaId = userRole === "admin" ? formData.woreda : woredaId;
 
     if (!finalWoredaId) {
-      setSubmitError("Woreda context not found. Please log in again.");
+      setSubmitError(t("common.sessionExpired", { defaultValue: "Woreda context not found. Please log in again." }));
       return;
     }
 
@@ -132,13 +134,13 @@ export default function EditCustomerDialog({ customer }: { customer: Customer })
         }
       >
         <Edit2 className="h-4 w-4 mr-2" />
-        Edit
+        {t("common.edit")}
       </DialogTrigger>
       <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
-          <DialogTitle>Edit Customer</DialogTitle>
+          <DialogTitle>{t("users.editUser")}</DialogTitle>
           <DialogDescription>
-            Update the customer&lsquo;s details.
+            {t("common.updateDetails", { defaultValue: "Update the customer's details." })}
           </DialogDescription>
         </DialogHeader>
 
@@ -152,16 +154,16 @@ export default function EditCustomerDialog({ customer }: { customer: Customer })
         <form onSubmit={handleSubmit} className="space-y-4">
           {userRole === "admin" && (
             <div className="space-y-2">
-              <Label htmlFor="woreda">Woreda Office</Label>
+              <Label htmlFor="woreda">{t("dashboard.nav.woredas")}</Label>
               <Select
                 value={formData.woreda}
                 onValueChange={(val) => handleSelectChange("woreda", val as string)}
                 disabled={isLoadingWoredas}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={isLoadingWoredas ? "Loading woredas..." : "Select Woreda"}>
+                  <SelectValue placeholder={isLoadingWoredas ? t("common.loading") : t("customers.allWoredas")}>
                     {formData.woreda
-                      ? woredas.find((w: any) => w._id === formData.woreda)?.name || "Select Woreda"
+                      ? woredas.find((w: any) => w._id === formData.woreda)?.name || t("customers.allWoredas")
                       : null}
                   </SelectValue>
                 </SelectTrigger>
@@ -178,7 +180,7 @@ export default function EditCustomerDialog({ customer }: { customer: Customer })
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName">First Name</Label>
+              <Label htmlFor="firstName">{t("common.firstName", { defaultValue: "First Name" })}</Label>
               <Input
                 id="firstName"
                 name="firstName"
@@ -188,7 +190,7 @@ export default function EditCustomerDialog({ customer }: { customer: Customer })
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name</Label>
+              <Label htmlFor="lastName">{t("common.lastName", { defaultValue: "Last Name" })}</Label>
               <Input
                 id="lastName"
                 name="lastName"
@@ -201,22 +203,22 @@ export default function EditCustomerDialog({ customer }: { customer: Customer })
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="gender">Gender</Label>
+              <Label htmlFor="gender">{t("common.gender")}</Label>
               <Select
                 value={formData.gender}
                 onValueChange={(value) => handleSelectChange("gender", value as "male" | "female")}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select gender" />
+                  <SelectValue placeholder={t("common.gender")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="male">Male</SelectItem>
-                  <SelectItem value="female">Female</SelectItem>
+                  <SelectItem value="male">{t("common.male", { defaultValue: "Male" })}</SelectItem>
+                  <SelectItem value="female">{t("common.female", { defaultValue: "Female" })}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="age">Age</Label>
+              <Label htmlFor="age">{t("common.age")}</Label>
               <Input
                 id="age"
                 name="age"
@@ -230,7 +232,7 @@ export default function EditCustomerDialog({ customer }: { customer: Customer })
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="fayda">Fayda National ID (16 digits)</Label>
+            <Label htmlFor="fayda">{t("customers.faydaID")}</Label>
             <Input
               id="fayda"
               name="fayda"
@@ -245,7 +247,7 @@ export default function EditCustomerDialog({ customer }: { customer: Customer })
 
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2 space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
+              <Label htmlFor="phone">{t("common.phone")}</Label>
               <Input
                 id="phone"
                 name="phone"
@@ -257,7 +259,7 @@ export default function EditCustomerDialog({ customer }: { customer: Customer })
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="kebele">Kebele</Label>
+              <Label htmlFor="kebele">{t("customers.kebele")}</Label>
               <Input
                 id="kebele"
                 name="kebele"
@@ -268,7 +270,7 @@ export default function EditCustomerDialog({ customer }: { customer: Customer })
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="houseNumber">House Number</Label>
+              <Label htmlFor="houseNumber">{t("customers.houseNumber")}</Label>
               <Input
                 id="houseNumber"
                 name="houseNumber"
@@ -287,10 +289,10 @@ export default function EditCustomerDialog({ customer }: { customer: Customer })
               onClick={() => setIsOpen(false)}
               disabled={updateMutation.isPending}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={updateMutation.isPending}>
-              {updateMutation.isPending ? "Updating..." : "Update"}
+              {updateMutation.isPending ? t("common.saving") : t("common.save")}
             </Button>
           </DialogFooter>
         </form>

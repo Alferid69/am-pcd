@@ -1,5 +1,6 @@
 import type { DashboardTransaction } from "./types";
 import { Download } from "lucide-react";
+import { useT } from "next-i18next/client";
 
 type TransactionsPanelProps = {
   title: string;
@@ -20,6 +21,7 @@ export default function TransactionsPanel({
   columnLabels,
   rows,
 }: TransactionsPanelProps) {
+  const { t } = useT("common");
   const handleExport = () => {
     // Basic CSV Export implementation
     const headers = [
@@ -65,7 +67,7 @@ export default function TransactionsPanel({
             onClick={handleExport}
             className="flex items-center gap-2 rounded-lg border border-(--bpds-outline-variant) px-3 py-1.5 text-sm font-medium text-(--bpds-on-surface-variant) hover:bg-slate-100 dark:hover:bg-slate-800"
           >
-            <Download className="w-4 h-4" /> Export CSV
+            <Download className="w-4 h-4" /> {t("common.exportCSV")}
           </button>
           <button
             type="button"

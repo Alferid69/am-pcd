@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { Plus, CheckCircle2, Clock, XCircle, FileText, Pencil, AlertCircle } from "lucide-react";
+import { useT } from "next-i18next/client";
 import { format } from "date-fns";
 import {
   Table,
@@ -44,21 +45,17 @@ interface RetailerRequestViewProps {
 
 type RequestItem = { commodity: string; quantity: number; unit: string };
 
-const getStatusBadge = (status: string) => {
+const StatusBadge = ({ status, t }: { status: string; t: any }) => {
   switch (status) {
     case "PENDING_WOREDA":
     case "PENDING_ZONE":
     case "PENDING_BUREAU":
-      const displayStatus = status
-        .split("_")
-        .map((w) => w.charAt(0) + w.slice(1).toLowerCase())
-        .join(" ");
       return (
         <Badge
           variant="secondary"
           className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-500"
         >
-          <Clock className="w-3 h-3 mr-1" /> {displayStatus}
+          <Clock className="w-3 h-3 mr-1" /> {status === "PENDING_WOREDA" ? t("dashboard.status.pendingWoreda") : status === "PENDING_ZONE" ? t("dashboard.status.pendingZone") : t("dashboard.status.pendingBureau")}
         </Badge>
       );
     case "APPROVED":
@@ -67,7 +64,7 @@ const getStatusBadge = (status: string) => {
           variant="default"
           className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-500"
         >
-          <CheckCircle2 className="w-3 h-3 mr-1" /> Approved
+          <CheckCircle2 className="w-3 h-3 mr-1" /> {t("dashboard.status.approved")}
         </Badge>
       );
     case "FULFILLED":
@@ -76,7 +73,7 @@ const getStatusBadge = (status: string) => {
           variant="default"
           className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-500"
         >
-          <CheckCircle2 className="w-3 h-3 mr-1" /> Fulfilled
+          <CheckCircle2 className="w-3 h-3 mr-1" /> {t("requests.status.fulfilled")}
         </Badge>
       );
     case "REJECTED":
@@ -85,7 +82,7 @@ const getStatusBadge = (status: string) => {
           variant="destructive"
           className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-500"
         >
-          <XCircle className="w-3 h-3 mr-1" /> Rejected
+          <XCircle className="w-3 h-3 mr-1" /> {t("dashboard.status.rejected")}
         </Badge>
       );
     default:
@@ -101,6 +98,7 @@ function CommodityItemRows({
   onItemChange,
   onAddItem,
   onRemoveItem,
+  t,
 }: {
   items: RequestItem[];
   commodities: Commodity[];
@@ -108,6 +106,7 @@ function CommodityItemRows({
   onItemChange: (index: number, field: keyof RequestItem, value: string | number) => void;
   onAddItem: () => void;
   onRemoveItem: (index: number) => void;
+  t: any;
 }) {
   return (
     <div className="space-y-4">
@@ -119,17 +118,17 @@ function CommodityItemRows({
             className="flex items-start gap-4 p-3.5 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800 transition-all"
           >
             <div className="flex-1 space-y-2">
-              <Label>Commodity</Label>
+              <Label>{t("dashboard.table.commodity")}</Label>
               <Select
                 value={item.commodity}
                 onValueChange={(val) => onItemChange(index, "commodity", val!)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select commodity">
+                  <SelectValue placeholder={t("requests.selectCommodity")}>
                     {selectedCommodity ? (
                       <span>{selectedCommodity.name}</span>
                     ) : (
-                      item.commodity ? <span>Unknown Commodity</span> : null
+                      item.commodity ? <span>{t("requests.unknownCommodity")}</span> : null
                     )}
                   </SelectValue>
                 </SelectTrigger>
@@ -138,7 +137,7 @@ function CommodityItemRows({
                     const isBlocked = blockedCommodityIds.has(c._id) && c._id !== item.commodity;
                     return (
                       <SelectItem key={c._id} value={c._id} disabled={isBlocked}>
-                        {c.name}{isBlocked ? " (Pending)" : ""}
+                        {c.name}{isBlocked ? t("requests.pendingSuffix") : ""}
                       </SelectItem>
                     );
                   })}
@@ -147,7 +146,7 @@ function CommodityItemRows({
             </div>
             
             <div className="w-28 space-y-2 shrink-0">
-              <Label>Quantity</Label>
+              <Label>{t("dashboard.table.quantity")}</Label>
               <Input
                 type="number"
                 min="1"
@@ -159,14 +158,14 @@ function CommodityItemRows({
             </div>
             
             <div className="w-32 space-y-2 shrink-0">
-              <Label>Unit</Label>
+              <Label>{t("requests.unit")}</Label>
               <Select
                 value={item.unit ?? ""}
                 onValueChange={(val) => onItemChange(index, "unit", val!)}
                 disabled={!item.commodity}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Unit" />
+                  <SelectValue placeholder={t("requests.unit")} />
                 </SelectTrigger>
                 <SelectContent>
                   {selectedCommodity && (
@@ -185,7 +184,7 @@ function CommodityItemRows({
 
             {items.length > 1 && (
               <div className="space-y-2 shrink-0">
-                <Label className="invisible block">Action</Label>
+                <Label className="invisible block">{t("common.actions")}</Label>
                 <Button
                   type="button"
                   variant="ghost"
@@ -208,7 +207,7 @@ function CommodityItemRows({
         onClick={onAddItem}
         className="w-full border-dashed"
       >
-        <Plus className="mr-2 h-4 w-4" /> Add another commodity
+        <Plus className="mr-2 h-4 w-4" /> {t("requests.addAnother")}
       </Button>
     </div>
   );
@@ -218,6 +217,7 @@ export default function RetailerRequestView({
   requests,
   isLoading,
 }: RetailerRequestViewProps) {
+  const { t } = useT("common");
   const queryClient = useQueryClient();
 
   // New request dialog state
@@ -260,7 +260,7 @@ export default function RetailerRequestView({
     },
     onError: (err: any) => {
       setCreateError(
-        err?.response?.data?.message ?? "Failed to submit request. Please try again."
+        err?.response?.data?.message ?? t("requests.failedLoad")
       );
     },
   });
@@ -276,7 +276,7 @@ export default function RetailerRequestView({
     },
     onError: (err: any) => {
       setEditError(
-        err?.response?.data?.message ?? "Failed to update request. Please try again."
+        err?.response?.data?.message ?? t("requests.failedLoad")
       );
     },
   });
@@ -350,10 +350,10 @@ export default function RetailerRequestView({
       <div className="flex justify-between items-end">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-(--bpds-on-surface)">
-            My Requests
+            {t("requests.myRequests")}
           </h2>
           <p className="text-muted-foreground">
-            Manage your stock requests and track their approval status.
+            {t("requests.manageDescription")}
           </p>
         </div>
 
@@ -373,14 +373,13 @@ export default function RetailerRequestView({
               <Button className="bg-(--bpds-primary) text-(--bpds-on-primary) hover:bg-(--bpds-primary)/90 shadow-(--bpds-shadow-level-2)" />
             }
           >
-            <Plus className="mr-2 h-4 w-4" /> New Stock Request
+            <Plus className="mr-2 h-4 w-4" /> {t("requests.new")}
           </DialogTrigger>
           <DialogContent className="sm:max-w-125">
             <DialogHeader>
-              <DialogTitle>Create Stock Request</DialogTitle>
+              <DialogTitle>{t("requests.createRequest")}</DialogTitle>
               <DialogDescription>
-                Select the commodities and quantities you need. Commodities marked
-                &quot;pending&quot; already have an active request.
+                {t("requests.createDescription")}
               </DialogDescription>
             </DialogHeader>
 
@@ -392,6 +391,7 @@ export default function RetailerRequestView({
                 onItemChange={makeItemChangeHandler(setNewItems)}
                 onAddItem={() => setNewItems((p) => [...p, { commodity: "", quantity: 1, unit: "" }])}
                 onRemoveItem={(i) => setNewItems((p) => p.filter((_, idx) => idx !== i))}
+                t={t}
               />
 
               {createError && (
@@ -407,7 +407,7 @@ export default function RetailerRequestView({
                   variant="outline"
                   onClick={() => setIsNewRequestOpen(false)}
                 >
-                  Cancel
+                  {t("common.cancel")}
                 </Button>
                 <Button
                   type="submit"
@@ -417,7 +417,7 @@ export default function RetailerRequestView({
                     !newItems[0].unit
                   }
                 >
-                  {createMutation.isPending ? "Submitting..." : "Submit Request"}
+                  {createMutation.isPending ? t("requests.submitting") : t("requests.submit")}
                 </Button>
               </DialogFooter>
             </form>
@@ -431,23 +431,23 @@ export default function RetailerRequestView({
           <Table>
             <TableHeader className="bg-(--bpds-surface-container-low)">
               <TableRow>
-                <TableHead className="w-30">Date</TableHead>
-                <TableHead>Requested Items</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="w-30">{t("common.date")}</TableHead>
+                <TableHead>{t("requests.requestedItems")}</TableHead>
+                <TableHead>{t("common.status")}</TableHead>
+                <TableHead className="text-right">{t("common.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
                   <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
-                    Loading requests...
+                    {t("requests.loading")}
                   </TableCell>
                 </TableRow>
               ) : requests.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
-                    No requests found. Create one to get started.
+                    {t("requests.noneRetailer")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -463,12 +463,12 @@ export default function RetailerRequestView({
                             <span className="font-semibold text-(--bpds-on-surface)">
                               {item.quantity}
                             </span>{" "}
-                            {item.unit} of {item.commodity?.name}
+                            {item.unit} {t("requests.of")} {item.commodity?.name}
                           </span>
                         ))}
                       </div>
                     </TableCell>
-                    <TableCell>{getStatusBadge(req.status)}</TableCell>
+                    <TableCell><StatusBadge status={req.status} t={t} /></TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
                         {/* EDIT button — only for PENDING_WOREDA requests */}
@@ -479,7 +479,7 @@ export default function RetailerRequestView({
                             className="text-orange-600 hover:text-orange-800 hover:bg-orange-50 dark:text-orange-400 dark:hover:bg-orange-950"
                             onClick={() => openEditDialog(req)}
                           >
-                            <Pencil className="h-4 w-4 mr-1.5" /> Edit
+                            <Pencil className="h-4 w-4 mr-1.5" /> {t("common.edit")}
                           </Button>
                         )}
 
@@ -494,13 +494,13 @@ export default function RetailerRequestView({
                               />
                             }
                           >
-                            <FileText className="h-4 w-4 mr-1.5" /> Timeline
+                            <FileText className="h-4 w-4 mr-1.5" /> {t("requests.timeline")}
                           </DialogTrigger>
                           <DialogContent>
                             <DialogHeader>
-                              <DialogTitle>Request Timeline</DialogTitle>
+                              <DialogTitle>{t("requests.requestTimeline")}</DialogTitle>
                               <DialogDescription>
-                                History and remarks for this request.
+                                {t("requests.timelineDescription")}
                               </DialogDescription>
                             </DialogHeader>
                             <div className="space-y-4 pt-4">
@@ -520,7 +520,7 @@ export default function RetailerRequestView({
                                   />
                                   <div>
                                     <p className="text-sm font-semibold">
-                                      {event.action} by {event.role}
+                                      {event.action} {t("requests.by")} {event.role}
                                     </p>
                                     <p className="text-xs text-muted-foreground mb-1">
                                       {format(new Date(event.timestamp), "PPpp")}
@@ -558,9 +558,9 @@ export default function RetailerRequestView({
       >
         <DialogContent className="sm:max-w-125">
           <DialogHeader>
-            <DialogTitle>Edit Stock Request</DialogTitle>
+            <DialogTitle>{t("requests.editRequest")}</DialogTitle>
             <DialogDescription>
-              Update your requested items before the Woreda reviews them.
+              {t("requests.editDescription")}
             </DialogDescription>
           </DialogHeader>
 
@@ -572,6 +572,7 @@ export default function RetailerRequestView({
               onItemChange={makeItemChangeHandler(setEditItems)}
               onAddItem={() => setEditItems((p) => [...p, { commodity: "", quantity: 1, unit: "" }])}
               onRemoveItem={(i) => setEditItems((p) => p.filter((_, idx) => idx !== i))}
+              t={t}
             />
 
             {editError && (
@@ -587,7 +588,7 @@ export default function RetailerRequestView({
                 variant="outline"
                 onClick={() => setEditingRequest(null)}
               >
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button
                 type="submit"
@@ -597,7 +598,7 @@ export default function RetailerRequestView({
                   !editItems[0]?.unit
                 }
               >
-                {editMutation.isPending ? "Saving..." : "Save Changes"}
+                {editMutation.isPending ? t("common.saving") : t("common.saveChanges")}
               </Button>
             </DialogFooter>
           </form>

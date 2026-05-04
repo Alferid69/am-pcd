@@ -15,8 +15,10 @@ import {
   Store,
   Sun,
   Users,
+  ShoppingBag,
   type LucideIcon,
 } from "lucide-react";
+import { useT } from "next-i18next/client";
 import type { IconName, NavItem } from "./types";
 
 const navIconMap: Record<IconName, LucideIcon> = {
@@ -35,6 +37,7 @@ const navIconMap: Record<IconName, LucideIcon> = {
   users: Users,
   store: Store,
   map_pin: MapPin,
+  shopping_bag: ShoppingBag,
 };
 
 type DashboardSidebarProps = {
@@ -50,6 +53,7 @@ type DashboardSidebarProps = {
 };
 
 import { useAuth } from "@/contexts/AuthContext";
+import Image from "next/image";
 
 export default function DashboardSidebar({
   isOpen,
@@ -62,6 +66,7 @@ export default function DashboardSidebar({
   onSelectNav,
   onClose,
 }: DashboardSidebarProps) {
+  const { t } = useT("common");
   const { logout } = useAuth();
   return (
     <>
@@ -79,7 +84,17 @@ export default function DashboardSidebar({
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="mb-4 rounded-2xl border border-(--bpds-outline-variant) bg-(--bpds-surface-container-low) p-3">
+        <div className="mb-4 flex items-center gap-3 rounded-2xl border border-(--bpds-outline-variant) bg-(--bpds-surface-container-low) p-3">
+          <div className="rounded-full overflow-hidden shrink-0 flex items-center justify-center bg-white dark:bg-white h-8 w-8">
+            <Image
+              src="/logo.png"
+              alt="AM-PCD Logo"
+              width={32}
+              height={32}
+              className="object-cover rounded-full bg-white dark:bg-white"
+              unoptimized
+            />
+          </div>
           <p className="text-xs font-semibold uppercase tracking-[0.08em] text-(--bpds-on-surface-variant)">
             {systemLabel}
           </p>
@@ -97,7 +112,9 @@ export default function DashboardSidebar({
               <div key={groupKey || groupIndex} className="space-y-1">
                 {groupKey && groupKey !== "main" && (
                   <div className="px-3 mb-2 mt-4 text-[0.65rem] font-bold uppercase tracking-wider text-(--bpds-on-surface-variant)/70">
-                    {groupKey}
+                    {t(`dashboard.group.${groupKey}`, {
+                      defaultValue: groupKey,
+                    })}
                   </div>
                 )}
                 {navItems
@@ -148,7 +165,9 @@ export default function DashboardSidebar({
               strokeWidth={1.8}
               aria-hidden="true"
             />
-            <span className="text-sm font-medium">Logout</span>
+            <span className="text-sm font-medium">
+              {t("common.logout", { defaultValue: "Logout" })}
+            </span>
           </button>
         </div>
       </aside>

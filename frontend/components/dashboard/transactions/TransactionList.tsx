@@ -28,12 +28,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 import { Badge } from "../../ui/badge";
 import { Input } from "../../ui/input";
 import { Button } from "../../ui/button";
+import { useT } from "next-i18next/client";
 
 export default function TransactionList({
   retailerId,
 }: {
   retailerId: string;
 }) {
+  const { t } = useT("common");
   const [searchTerm, setSearchTerm] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -64,19 +66,17 @@ export default function TransactionList({
     if (!filteredTransactions.length) return;
 
     const headers = [
-      "Customer",
-      // "ID Card",
-      "Commodity",
-      "Qty (kg)",
-      "Unit Price",
-      "Total Price",
-      "Date",
+      t("common.customer"),
+      t("dashboard.table.commodity"),
+      `${t("dashboard.table.quantity")} (${t("common.kg")})`,
+      t("transactions.unitPrice"),
+      t("transactions.totalPrice"),
+      t("common.date"),
     ];
     const csvContent = [
       headers.join(","),
       ...filteredTransactions.map((t) => {
         const customer = `${t.customer?.firstName || ""} ${t.customer?.lastName || ""}`;
-        // const idCard = t.customer?.fayda || "";
         const commodity = t.commodity?.name || "";
         const qty = t.amount;
         const price = t.commodity?.price || 0;
@@ -124,18 +124,18 @@ export default function TransactionList({
     string,
     { volume: number; unit: string; revenue: number }
   > = {};
-  filteredTransactions.forEach((t) => {
-    if (t.commodity?.name) {
-      if (!commodityVolumes[t.commodity.name]) {
-        commodityVolumes[t.commodity.name] = {
+  filteredTransactions.forEach((tx) => {
+    if (tx.commodity?.name) {
+      if (!commodityVolumes[tx.commodity.name]) {
+        commodityVolumes[tx.commodity.name] = {
           volume: 0,
-          unit: t.commodity.baseUnit || "units",
+          unit: tx.commodity.baseUnit || "units",
           revenue: 0,
         };
       }
-      commodityVolumes[t.commodity.name].volume += t.amount || 0;
-      commodityVolumes[t.commodity.name].revenue +=
-        (t.amount || 0) * (t.commodity.price || 0);
+      commodityVolumes[tx.commodity.name].volume += tx.amount || 0;
+      commodityVolumes[tx.commodity.name].revenue +=
+        (tx.amount || 0) * (tx.commodity.price || 0);
     }
   });
 
@@ -148,7 +148,8 @@ export default function TransactionList({
     if (status === "success") {
       return (
         <Badge className="bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-500">
-          <CheckCircle2 className="w-3 h-3 mr-1" /> Success
+          <CheckCircle2 className="w-3 h-3 mr-1" />{" "}
+          {t("dashboard.status.success")}
         </Badge>
       );
     }
@@ -166,7 +167,7 @@ export default function TransactionList({
         <Card className="bg-(--bpds-surface) border-(--bpds-outline-variant)">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Transactions
+              {t("transactions.totalTransactions")}
             </CardTitle>
             <Activity className="h-4 w-4 text-blue-500" />
           </CardHeader>
@@ -175,7 +176,7 @@ export default function TransactionList({
               {totalTransactions}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              In selected period
+              {t("transactions.inSelectedPeriod")}
             </p>
           </CardContent>
         </Card>
@@ -183,7 +184,7 @@ export default function TransactionList({
         <Card className="bg-(--bpds-surface) border-(--bpds-outline-variant)">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Revenue
+              {t("transactions.totalRevenue")}
             </CardTitle>
             <DollarSign className="h-4 w-4 text-green-500" />
           </CardHeader>
@@ -197,7 +198,7 @@ export default function TransactionList({
               </span>
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Across all commodities
+              {t("transactions.acrossAllCommodities")}
             </p>
           </CardContent>
         </Card>
@@ -209,7 +210,7 @@ export default function TransactionList({
           >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                {name} Dispensed
+                {name} {t("transactions.dispensed")}
               </CardTitle>
               <Package className="h-4 w-4 text-purple-500" />
             </CardHeader>
@@ -221,7 +222,7 @@ export default function TransactionList({
                 </span>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Revenue:{" "}
+                {t("transactions.revenueLabel")}{" "}
                 <span className="font-medium text-(--bpds-on-surface)">
                   {data.revenue.toLocaleString("en-ET", {
                     maximumFractionDigits: 2,
@@ -240,7 +241,7 @@ export default function TransactionList({
           <div className="relative w-full xl:max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by customer name, Fayda ID, or commodity..."
+              placeholder={t("transactions.searchPlaceholder")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9 w-full"
@@ -250,7 +251,7 @@ export default function TransactionList({
           <div className="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto">
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <span className="text-sm text-muted-foreground font-medium hidden sm:inline">
-                From:
+                {t("common.from")}
               </span>
               <Input
                 type="date"
@@ -261,7 +262,7 @@ export default function TransactionList({
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <span className="text-sm text-muted-foreground font-medium hidden sm:inline">
-                To:
+                {t("common.to")}
               </span>
               <Input
                 type="date"
@@ -276,7 +277,7 @@ export default function TransactionList({
                 variant="default"
                 className="w-full sm:w-auto"
               >
-                <Filter className="w-4 h-4 mr-2" /> Filter
+                <Filter className="w-4 h-4 mr-2" /> {t("common.filter")}
               </Button>
               {(appliedStartDate || appliedEndDate) && (
                 <Button
@@ -284,7 +285,7 @@ export default function TransactionList({
                   variant="outline"
                   className="w-full sm:w-auto px-3"
                 >
-                  Clear
+                  {t("common.clear")}
                 </Button>
               )}
               <Button
@@ -294,7 +295,7 @@ export default function TransactionList({
                 disabled={filteredTransactions.length === 0}
               >
                 <Download className="w-4 h-4 mr-2" />
-                Export
+                {t("common.export")}
               </Button>
             </div>
           </div>
@@ -307,12 +308,16 @@ export default function TransactionList({
           <Table>
             <TableHeader className="bg-(--bpds-surface-container-low)">
               <TableRow>
-                <TableHead>Date & Time</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Fayda ID</TableHead>
-                <TableHead>Commodity</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead className="text-right">Status</TableHead>
+                <TableHead>{t("common.dateTime")}</TableHead>
+                <TableHead>{t("common.customer")}</TableHead>
+                <TableHead>{t("customers.faydaID")}</TableHead>
+                <TableHead>{t("dashboard.table.commodity")}</TableHead>
+                <TableHead className="text-right">
+                  {t("dashboard.table.quantity")}
+                </TableHead>
+                <TableHead className="text-right">
+                  {t("common.status")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -322,7 +327,7 @@ export default function TransactionList({
                     colSpan={6}
                     className="text-center py-10 text-muted-foreground"
                   >
-                    Loading transactions...
+                    {t("transactions.loadingTransactions")}
                   </TableCell>
                 </TableRow>
               ) : filteredTransactions.length === 0 ? (
@@ -331,39 +336,39 @@ export default function TransactionList({
                     colSpan={6}
                     className="text-center py-10 text-muted-foreground"
                   >
-                    No transactions found for this period.
+                    {t("transactions.noTransactionsFound")}
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredTransactions.map((t) => (
-                  <TableRow key={t._id}>
+                filteredTransactions.map((tx) => (
+                  <TableRow key={tx._id}>
                     <TableCell className="whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-muted-foreground" />
-                        {t.createdAt
-                          ? format(new Date(t.createdAt), "MMM d, yyyy h:mm a")
-                          : "N/A"}
+                        {tx.createdAt
+                          ? format(new Date(tx.createdAt), "MMM d, yyyy h:mm a")
+                          : t("common.na")}
                       </div>
                     </TableCell>
                     <TableCell className="font-medium">
-                      {t.customer
-                        ? `${t.customer.firstName} ${t.customer.lastName}`
-                        : "Unknown"}
+                      {tx.customer
+                        ? `${tx.customer.firstName} ${tx.customer.lastName}`
+                        : t("common.unknown")}
                     </TableCell>
                     <TableCell className="font-mono text-xs">
-                      {t.customerFayda}
+                      {tx.customerFayda}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Package className="w-4 h-4 text-(--bpds-primary)" />
-                        {t.commodity?.name || "Unknown"}
+                        {tx.commodity?.name || t("common.unknown")}
                       </div>
                     </TableCell>
                     <TableCell className="text-right font-medium">
-                      {t.amount} {t.commodity?.baseUnit || "units"}
+                      {tx.amount} {tx.commodity?.baseUnit || t("common.units")}
                     </TableCell>
                     <TableCell className="text-right">
-                      {getStatusBadge(t.status)}
+                      {getStatusBadge(tx.status)}
                     </TableCell>
                   </TableRow>
                 ))

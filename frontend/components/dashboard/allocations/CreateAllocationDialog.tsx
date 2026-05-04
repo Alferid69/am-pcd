@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Plus, Package, AlertCircle } from "lucide-react";
+import { useT } from "next-i18next/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
@@ -27,6 +28,7 @@ import { fetchStockRequests } from "../../../api/apiStockRequests";
 import type { StockRequest } from "../types";
 
 export default function CreateAllocationDialog() {
+  const { t } = useT("common");
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedRequestId, setSelectedRequestId] = useState<string>("");
@@ -63,7 +65,7 @@ export default function CreateAllocationDialog() {
     onError: (err: any) => {
       setSubmitError(
         err?.response?.data?.message ??
-          "Failed to create allocation. Please try again.",
+          t("allocations.errorFailed"),
       );
     },
   });
@@ -108,7 +110,7 @@ export default function CreateAllocationDialog() {
     const validItems = allocatedItems.filter((item) => item.quantity > 0);
 
     if (validItems.length === 0) {
-      setSubmitError("You must allocate at least 1 unit of a commodity.");
+      setSubmitError(t("allocations.errorQuantity"));
       return;
     }
 
@@ -136,23 +138,21 @@ export default function CreateAllocationDialog() {
           <Button className="bg-(--bpds-primary) text-(--bpds-on-primary) hover:bg-(--bpds-primary)/90 shadow-(--bpds-shadow-level-2)" />
         }
       >
-        <Plus className="mr-2 h-4 w-4" /> Make Allocation
+        <Plus className="mr-2 h-4 w-4" /> {t("allocations.make")}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Package className="w-5 h-5 text-(--bpds-primary)" /> Dispatch
-            Allocation
+            <Package className="w-5 h-5 text-(--bpds-primary)" /> {t("allocations.dispatch")}
           </DialogTitle>
           <DialogDescription>
-            Select an approved Stock Request to allocate physical goods to the
-            cooperative.
+            {t("allocations.createDescription")}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 pt-4">
           <div className="space-y-2">
-            <Label>Approved Stock Request</Label>
+            <Label>{t("allocations.approvedRequest")}</Label>
             <Select
               value={selectedRequestId}
               onValueChange={handleSelectRequest}
@@ -161,7 +161,7 @@ export default function CreateAllocationDialog() {
               <SelectTrigger>
                 <SelectValue
                   placeholder={
-                    isLoadingRequests ? "Loading..." : "Select a request..."
+                    isLoadingRequests ? t("common.loading") : t("allocations.selectRequest")
                   }
                 >
                   {selectedRequest && (
@@ -175,7 +175,7 @@ export default function CreateAllocationDialog() {
               <SelectContent>
                 {approvedRequests.length === 0 && !isLoadingRequests ? (
                   <div className="p-2 text-sm text-muted-foreground text-center">
-                    No approved requests pending allocation.
+                    {t("allocations.noPendingRequests")}
                   </div>
                 ) : (
                   approvedRequests.map((req) => (
@@ -192,7 +192,7 @@ export default function CreateAllocationDialog() {
           {selectedRequest && (
             <div className="space-y-4 rounded-lg border border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50 p-4">
               <h4 className="text-sm font-semibold text-(--bpds-on-surface)">
-                Items to Allocate
+                {t("allocations.itemsToAllocate")}
               </h4>
               <div className="space-y-3">
                 {selectedRequest.requestedItems.map((reqItem, idx) => {
@@ -203,7 +203,7 @@ export default function CreateAllocationDialog() {
                     <div key={idx} className="flex items-center gap-4">
                       <div className="flex-1">
                         <Label className="text-xs text-muted-foreground">
-                          Commodity
+                          {t("dashboard.table.commodity")}
                         </Label>
                         <div className="text-sm font-medium pt-1">
                           {reqItem.commodity?.name} ({reqItem.unit})
@@ -211,7 +211,7 @@ export default function CreateAllocationDialog() {
                       </div>
                       <div className="w-24">
                         <Label className="text-xs text-muted-foreground">
-                          Requested
+                          {t("allocations.requested")}
                         </Label>
                         <div className="text-sm pt-1 px-3 py-1.5 bg-slate-200 dark:bg-slate-800 rounded-md">
                           {reqItem.quantity}
@@ -219,7 +219,7 @@ export default function CreateAllocationDialog() {
                       </div>
                       <div className="w-28">
                         <Label className="text-xs text-muted-foreground">
-                          Allocate
+                          {t("allocations.allocate")}
                         </Label>
                         <Input
                           type="number"
@@ -254,15 +254,15 @@ export default function CreateAllocationDialog() {
               variant="outline"
               onClick={() => setIsOpen(false)}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               type="submit"
               disabled={!selectedRequestId || createMutation.isPending}
             >
               {createMutation.isPending
-                ? "Allocating..."
-                : "Dispatch Allocation"}
+                ? t("allocations.allocating")
+                : t("allocations.dispatch")}
             </Button>
           </DialogFooter>
         </form>

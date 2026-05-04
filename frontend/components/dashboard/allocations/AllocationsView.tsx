@@ -7,6 +7,7 @@ import {
   Truck,
   Plus,
 } from "lucide-react";
+import { useT } from "next-i18next/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   fetchAllocations,
@@ -29,6 +30,7 @@ import CreateAllocationDialog from "./CreateAllocationDialog";
 import { format } from "date-fns";
 
 export default function AllocationsView() {
+  const { t } = useT("common");
   const queryClient = useQueryClient();
   const { userRole } = useAuth();
 
@@ -55,13 +57,13 @@ export default function AllocationsView() {
     if (status === "DELIVERED") {
       return (
         <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-500 hover:bg-green-100">
-          <CheckCircle2 className="w-3 h-3 mr-1" /> Delivered
+          <CheckCircle2 className="w-3 h-3 mr-1" /> {t("allocations.delivered")}
         </Badge>
       );
     }
     return (
       <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-500 hover:bg-yellow-100">
-        <Truck className="w-3 h-3 mr-1" /> Dispatched
+        <Truck className="w-3 h-3 mr-1" /> {t("allocations.dispatched")}
       </Badge>
     );
   };
@@ -71,10 +73,10 @@ export default function AllocationsView() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-(--bpds-on-surface) flex items-center gap-2">
-            <PieChart className="w-6 h-6 text-(--bpds-primary)" /> Allocations
+            <PieChart className="w-6 h-6 text-(--bpds-primary)" /> {t("allocations.title")}
           </h2>
           <p className="text-muted-foreground mt-1">
-            Track and manage physical stock shipments to cooperatives.
+            {t("allocations.subtitle")}
           </p>
         </div>
 
@@ -88,12 +90,12 @@ export default function AllocationsView() {
           <Table>
             <TableHeader className="bg-(--bpds-surface-container-low)">
               <TableRow>
-                <TableHead className="w-32">Date</TableHead>
-                <TableHead>Destination</TableHead>
-                <TableHead>Shipped Items</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead className="w-32">{t("common.date")}</TableHead>
+                <TableHead>{t("allocations.destination")}</TableHead>
+                <TableHead>{t("allocations.shippedItems")}</TableHead>
+                <TableHead>{t("common.status")}</TableHead>
                 {isWoreda && (
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-right">{t("common.actions")}</TableHead>
                 )}
               </TableRow>
             </TableHeader>
@@ -104,7 +106,7 @@ export default function AllocationsView() {
                     colSpan={isWoreda ? 5 : 4}
                     className="h-24 text-center text-muted-foreground"
                   >
-                    Loading allocations...
+                    {t("allocations.loading")}
                   </TableCell>
                 </TableRow>
               ) : allocations.length === 0 ? (
@@ -113,7 +115,7 @@ export default function AllocationsView() {
                     colSpan={isWoreda ? 5 : 4}
                     className="h-24 text-center text-muted-foreground"
                   >
-                    No allocations found.
+                    {t("allocations.none")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -127,7 +129,7 @@ export default function AllocationsView() {
                         {allocation.retailerCooperative?.name}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        Woreda:{" "}
+                        {t("allocations.woreda")}{" "}
                         {allocation.retailerCooperative?.woredaOffice?.name ||
                           "N/A"}
                       </div>
@@ -139,7 +141,7 @@ export default function AllocationsView() {
                             <span className="font-semibold text-(--bpds-on-surface)">
                               {item.quantity}
                             </span>{" "}
-                            {item.commodity?.bulkUnit || "units"} of{" "}
+                            {item.commodity?.bulkUnit || t("common.units")} {t("requests.of")}{" "}
                             {item.commodity?.name}
                           </span>
                         ))}
@@ -160,8 +162,8 @@ export default function AllocationsView() {
                           >
                             <CheckCircle2 className="w-4 h-4 mr-2" />
                             {deliverMutation.isPending
-                              ? "Confirming..."
-                              : "Confirm Delivery"}
+                              ? t("allocations.confirming")
+                              : t("allocations.confirmDelivery")}
                           </Button>
                         )}
                       </TableCell>

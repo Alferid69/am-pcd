@@ -1,9 +1,4 @@
-export type RoleKey =
-  | "admin"
-  | "bureau"
-  | "zone"
-  | "woreda"
-  | "retailer";
+export type RoleKey = "admin" | "bureau" | "zone" | "woreda" | "retailer";
 
 export type IconName =
   | "dashboard"
@@ -20,7 +15,8 @@ export type IconName =
   | "pie_chart"
   | "users"
   | "store"
-  | "map_pin";
+  | "map_pin"
+  | "shopping_bag";
 
 export type NavItem = {
   key: string;
@@ -118,19 +114,22 @@ export type Customer = {
   _id: string;
   firstName: string;
   lastName: string;
-  gender: 'male' | 'female';
+  gender: "male" | "female";
   age: number;
   fayda: string;
   phone: string;
   woreda: string;
   kebele: string;
   houseNumber: string;
-  status: 'available' | 'taken';
+  status: "available" | "taken";
   createdAt: string;
   updatedAt: string;
 };
 
-export type CreateCustomerPayload = Omit<Customer, '_id' | 'createdAt' | 'updatedAt'>;
+export type CreateCustomerPayload = Omit<
+  Customer,
+  "_id" | "createdAt" | "updatedAt"
+>;
 
 export type RetailerCooperative = {
   _id: string;
@@ -147,10 +146,26 @@ export type RetailerCooperative = {
 
 export type Transaction = {
   _id: string;
-  retailer: { _id: string; name: string; woredaOffice: { _id: string; name: string } };
+  retailer: {
+    _id: string;
+    name: string;
+    woredaOffice: { _id: string; name: string };
+  };
   customerFayda: string;
-  customer: { _id: string; firstName: string; lastName: string; phone: string; fayda: string };
-  commodity: { _id: string; name: string; price: number; baseUnit: string; bulkUnit: string };
+  customer: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    phone: string;
+    fayda: string;
+  };
+  commodity: {
+    _id: string;
+    name: string;
+    price: number;
+    baseUnit: string;
+    bulkUnit: string;
+  };
   amount: number;
   status: string;
   createdAt: string;

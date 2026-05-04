@@ -74,7 +74,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [fetchUser]);
 
   useEffect(() => {
-    fetchUser();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void fetchUser();
   }, [fetchUser]);
 
   const login = useCallback((data: any) => {

@@ -1,5 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import type { DashboardAction } from "./types";
+import { useT } from "next-i18next/client";
 
 type QuickActionsPanelProps = {
   title: string;
@@ -10,6 +11,7 @@ export default function QuickActionsPanel({
   title,
   actions,
 }: QuickActionsPanelProps) {
+  const { t } = useT("common");
   return (
     <article className="rounded-2xl border border-(--bpds-outline-variant) bg-(--bpds-surface-container-lowest) p-6 shadow-(--bpds-shadow-level-1)">
       <h3 className="text-lg font-semibold text-(--bpds-on-surface)">

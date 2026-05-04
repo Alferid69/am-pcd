@@ -6,8 +6,10 @@ import { Package, AlertTriangle } from "lucide-react";
 import { fetchRetailerById } from "../../../api/apiRetailers";
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 import { Badge } from "../../ui/badge";
+import { useT } from "next-i18next/client";
 
 export default function InventoryOverview({ retailerId }: { retailerId: string }) {
+  const { t } = useT("common");
   const { data: retailer, isLoading } = useQuery({
     queryKey: ["retailer", retailerId],
     queryFn: () => fetchRetailerById(retailerId),
@@ -31,7 +33,7 @@ export default function InventoryOverview({ retailerId }: { retailerId: string }
       <Card className="border-dashed">
         <CardContent className="flex flex-col items-center justify-center py-6 text-muted-foreground">
           <Package className="w-8 h-8 mb-2 opacity-20" />
-          <p className="text-sm">No inventory data available for this retailer.</p>
+          <p className="text-sm">{t("transactions.noInventoryData")}</p>
         </CardContent>
       </Card>
     );
@@ -40,7 +42,7 @@ export default function InventoryOverview({ retailerId }: { retailerId: string }
   return (
     <div className="space-y-3">
       <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider px-1">
-        Current Inventory Stock
+        {t("transactions.currentInventory")}
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {inventory.map((item: any) => {
@@ -68,7 +70,7 @@ export default function InventoryOverview({ retailerId }: { retailerId: string }
                 {isLowStock && (
                   <div className="mt-1 flex items-center gap-1 text-[10px] text-amber-600 font-medium">
                     <AlertTriangle className="w-2.5 h-2.5" />
-                    Low Stock Warning
+                    {t("transactions.lowStockWarning")}
                   </div>
                 )}
               </CardContent>

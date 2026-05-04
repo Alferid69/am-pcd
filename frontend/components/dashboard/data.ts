@@ -1,7 +1,12 @@
 import type { NavItem, RoleKey } from "./types";
 
 export const baseNavItems: NavItem[] = [
-  { key: "overview", labelKey: "dashboard.nav.overview", icon: "dashboard", group: "main" },
+  {
+    key: "overview",
+    labelKey: "dashboard.nav.overview",
+    icon: "dashboard",
+    group: "main",
+  },
   {
     key: "stockRequests",
     labelKey: "dashboard.nav.requestStock",
@@ -44,7 +49,18 @@ export const baseNavItems: NavItem[] = [
     icon: "account_circle",
     group: "system",
   },
-  { key: "settings", labelKey: "dashboard.nav.settings", icon: "settings", group: "system" },
+  {
+    key: "commodities",
+    labelKey: "dashboard.nav.commodities",
+    icon: "shopping_bag",
+    group: "system",
+  },
+  {
+    key: "settings",
+    labelKey: "dashboard.nav.settings",
+    icon: "settings",
+    group: "system",
+  },
 ];
 
 const HIDDEN_FROM_NON_ADMIN = new Set(["users"]);
@@ -53,30 +69,39 @@ const HIDDEN_FROM_RETAILER = new Set([
   "customers",
   "woredas",
   "entities",
-  "users"
+  "users",
+  "commodities",
 ]);
 
 const retailerNavItems = baseNavItems.filter(
-  (item) => !HIDDEN_FROM_RETAILER.has(item.key)
+  (item) => !HIDDEN_FROM_RETAILER.has(item.key),
 );
 
 // Woredas page is only relevant for zone/bureau/admin oversight roles.
-const HIDDEN_FROM_WOREDA = new Set(["woredas", "entities", "users"]);
+const HIDDEN_FROM_WOREDA = new Set([
+  "woredas",
+  "entities",
+  "users",
+  "commodities",
+]);
 const woredaNavItems = baseNavItems.filter(
-  (item) => !HIDDEN_FROM_WOREDA.has(item.key)
+  (item) => !HIDDEN_FROM_WOREDA.has(item.key),
 );
 
 const nonAdminNavItems = baseNavItems.filter(
-  (item) => !HIDDEN_FROM_NON_ADMIN.has(item.key) && item.key !== "entities"
+  (item) =>
+    !HIDDEN_FROM_NON_ADMIN.has(item.key) &&
+    item.key !== "entities" &&
+    item.key !== "commodities",
 );
 
 const bureauNavItems = baseNavItems.filter(
-  (item) => !HIDDEN_FROM_NON_ADMIN.has(item.key)
+  (item) => !HIDDEN_FROM_NON_ADMIN.has(item.key),
 );
 
 const ADMIN_HIDDEN = new Set(["stockRequests", "transactions", "allocations"]);
 const adminNavItems = baseNavItems.filter(
-  (item) => !ADMIN_HIDDEN.has(item.key)
+  (item) => !ADMIN_HIDDEN.has(item.key),
 );
 
 export const roleNavMap: Record<RoleKey, NavItem[]> = {

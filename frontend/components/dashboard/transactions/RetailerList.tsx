@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { Store, Search, Filter, ArrowRight } from "lucide-react";
+import { useParams } from "next/navigation";
 import { fetchRetailers } from "../../../api/apiRetailers";
 import type { RetailerCooperative } from "../../dashboard/types";
 import { useAuth } from "../../../contexts/AuthContext";
@@ -18,10 +19,14 @@ import {
 import { Card, CardContent } from "../../ui/card";
 import { Input } from "../../ui/input";
 import { Button } from "../../ui/button";
+import { useT } from "next-i18next/client";
 
 export default function RetailerList() {
+  const { t } = useT("common");
   const { userRole, worksAt } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
+  const params = useParams();
+  const lng = params?.lng || "en";
 
   const { data: retailers = [], isLoading } = useQuery<RetailerCooperative[]>({
     queryKey: ["retailers"],
@@ -43,10 +48,11 @@ export default function RetailerList() {
       <div className="flex flex-col sm:flex-row justify-between sm:items-end gap-4">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-(--bpds-on-surface) flex items-center gap-2">
-            <Store className="w-6 h-6 text-(--bpds-primary)" /> Retailer Transactions
+            <Store className="w-6 h-6 text-(--bpds-primary)" />{" "}
+            {t("transactions.retailerTransactions")}
           </h2>
           <p className="text-muted-foreground mt-1 text-sm">
-            Select a retailer to view their sales transactions.
+            {t("transactions.selectRetailerDescription")}
           </p>
         </div>
       </div>
@@ -56,7 +62,7 @@ export default function RetailerList() {
           <div className="relative w-full sm:max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search retailers by name..."
+              placeholder={t("transactions.searchRetailersPlaceholder")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9"
@@ -70,10 +76,12 @@ export default function RetailerList() {
           <Table>
             <TableHeader className="bg-(--bpds-surface-container-low)">
               <TableRow>
-                <TableHead>Retailer Name</TableHead>
-                {!isWoreda && <TableHead>Woreda</TableHead>}
-                <TableHead>Available Commodities</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t("entities.retailerName")}</TableHead>
+                {!isWoreda && <TableHead>{t("entities.woredas")}</TableHead>}
+                <TableHead>{t("transactions.availableCommodities")}</TableHead>
+                <TableHead className="text-right">
+                  {t("common.actions")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -83,7 +91,7 @@ export default function RetailerList() {
                     colSpan={isWoreda ? 3 : 4}
                     className="text-center py-10 text-muted-foreground"
                   >
-                    Loading retailers...
+                    {t("entities.loadingRetailers")}
                   </TableCell>
                 </TableRow>
               ) : filteredRetailers.length === 0 ? (
@@ -92,7 +100,7 @@ export default function RetailerList() {
                     colSpan={isWoreda ? 3 : 4}
                     className="text-center py-10 text-muted-foreground"
                   >
-                    No retailers found.
+                    {t("entities.noRetailers")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -103,16 +111,23 @@ export default function RetailerList() {
                       <TableCell>{r.woredaOffice?.name || "N/A"}</TableCell>
                     )}
                     <TableCell>
-                      {r.availableCommodity?.length || 0} items
+                      {r.availableCommodity && r.availableCommodity.length > 0
+                        ? r.availableCommodity
+                            .map((ac) => ac.commodity?.name)
+                            .filter(Boolean)
+                            .join(", ")
+                        : "—"}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Link href={`/dashboard/transactions/retailer/${r._id}`}>
+                      <Link
+                        href={`/${lng}/dashboard/transactions/retailer/${r._id}`}
+                      >
                         <Button
                           variant="outline"
                           size="sm"
                           className="text-indigo-600 border-indigo-200 hover:bg-indigo-50 dark:text-indigo-400 dark:border-indigo-900/50 dark:hover:bg-indigo-900/20"
                         >
-                          View Transactions
+                          {t("transactions.viewTransactions")}
                           <ArrowRight className="h-4 w-4 ml-2" />
                         </Button>
                       </Link>
