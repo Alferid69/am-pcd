@@ -3,6 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 
+class RoleException implements Exception {
+  final String message;
+  RoleException(this.message);
+  @override
+  String toString() => message;
+}
+
 class AuthProvider with ChangeNotifier {
   String? _token;
   Map<String, dynamic>? _user;
@@ -22,10 +29,19 @@ class AuthProvider with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     if (!prefs.containsKey('jwt')) return;
 
-    _token = prefs.getString('jwt');
+    final token = prefs.getString('jwt');
     final userData = prefs.getString('user');
+    
     if (userData != null) {
-      _user = jsonDecode(userData);
+      final user = jsonDecode(userData);
+      if (user['role'] == 'retailer') {
+        _token = token;
+        _user = user;
+      } else {
+        // Clear invalid session
+        await prefs.remove('jwt');
+        await prefs.remove('user');
+      }
     }
     notifyListeners();
   }
@@ -39,12 +55,14 @@ class AuthProvider with ChangeNotifier {
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200 && data['status'] == 'success') {
-        _token = data['token'];
-        _user = data['data']['user'];
+        final user = data['data']['user'];
 
-        if (_user!['role'] != 'retailer') {
-          throw Exception('Only retailers can access this application');
+        if (user['role'] != 'retailer') {
+          throw RoleException('UNAUTHORIZED_ROLE');
         }
+
+        _token = data['token'];
+        _user = user;
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('jwt', _token!);
@@ -56,6 +74,10 @@ class AuthProvider with ChangeNotifier {
       } else {
         throw Exception(data['message'] ?? 'Login failed');
       }
+    } on RoleException {
+      _isLoading = false;
+      notifyListeners();
+      rethrow;
     } on Exception catch (e) {
       _isLoading = false;
       notifyListeners();

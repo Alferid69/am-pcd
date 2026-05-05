@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:intl/intl.dart';
+import 'package:application/l10n/app_localizations.dart';
 import '../services/api_service.dart';
+import '../widgets/new_request_dialog.dart';
 
 class StockRequestsScreen extends StatefulWidget {
   const StockRequestsScreen({super.key});
@@ -15,8 +17,6 @@ class _StockRequestsScreenState extends State<StockRequestsScreen> {
   List<dynamic> _requests = [];
   bool _isLoading = true;
   List<dynamic> _commodities = [];
-  bool _isSubmitting = false;
-  String? _createError;
 
   @override
   void initState() {
@@ -29,6 +29,7 @@ class _StockRequestsScreenState extends State<StockRequestsScreen> {
     setState(() => _isLoading = true);
     try {
       final response = await ApiService.getStockRequests();
+      if (!mounted) return;
       final data = jsonDecode(response.body);
       if (response.statusCode == 200) {
         setState(() => _requests = data['data']);
@@ -36,13 +37,16 @@ class _StockRequestsScreenState extends State<StockRequestsScreen> {
     } catch (e) {
       debugPrint('Error fetching requests: $e');
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   Future<void> _fetchCommodities() async {
     try {
       final response = await ApiService.getCommodities();
+      if (!mounted) return;
       final data = jsonDecode(response.body);
       if (response.statusCode == 200) {
         setState(() => _commodities = data['data'] ?? []);
@@ -68,200 +72,20 @@ class _StockRequestsScreenState extends State<StockRequestsScreen> {
     return ids;
   }
 
-  void _openNewRequestDialog() {
-    List<Map<String, dynamic>> newItems = [
-      {'commodity': null, 'quantity': 1, 'unit': null},
-    ];
-    String? errorMsg;
-    bool isSubmitting = false;
+  Future<void> _openNewRequestDialog() async {
     final blockedIds = _alreadyPendingCommodityIds();
-
-    showDialog(
+    final bool? shouldRefresh = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (context) {
-        return StatefulBuilder(builder: (context, setStateDialog) {
-          void addItem() {
-            setStateDialog(() {
-              newItems.add({'commodity': null, 'quantity': 1, 'unit': null});
-            });
-          }
-
-          void removeItem(int idx) {
-            setStateDialog(() {
-              newItems.removeAt(idx);
-            });
-          }
-
-          Future<void> submit() async {
-            setStateDialog(() {
-              isSubmitting = true;
-              errorMsg = null;
-            });
-            final validItems = newItems.where((i) => i['commodity'] != null && i['quantity'] > 0 && i['unit'] != null).toList();
-            if (validItems.isEmpty) {
-              setStateDialog(() {
-                errorMsg = 'Please add at least one valid item.';
-                isSubmitting = false;
-              });
-              return;
-            }
-            try {
-              final payload = {
-                'requestedItems': validItems.map((i) => {
-                      'commodity': i['commodity'],
-                      'quantity': i['quantity'],
-                      'unit': i['unit'],
-                    }).toList()
-              };
-              final response = await ApiService.createStockRequest(payload);
-              if (response.statusCode == 201) {
-                Navigator.of(context).pop();
-                _fetchRequests();
-              } else {
-                final respData = jsonDecode(response.body);
-                setStateDialog(() {
-                  errorMsg = respData['message'] ?? 'Failed to create request.';
-                });
-              }
-            } catch (e) {
-              setStateDialog(() {
-                errorMsg = 'Error: $e';
-              });
-            } finally {
-              setStateDialog(() {
-                isSubmitting = false;
-              });
-            }
-          }
-
-          return AlertDialog(
-            title: const Text('Create Stock Request'),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ...newItems.asMap().entries.map((entry) {
-                    final idx = entry.key;
-                    final item = entry.value;
-                    final selectedCommodityId = item['commodity'] as String?;
-                    final selectedCommodity = _commodities.firstWhere(
-                        (c) => c['_id'] == selectedCommodityId,
-                        orElse: () => null);
-                    final unitOptions = selectedCommodity != null
-                        ? [selectedCommodity['baseUnit'], selectedCommodity['bulkUnit']]
-                        : [];
-                    return Column(
-                      children: [
-                        Column(
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: DropdownButtonFormField<String>(
-                                    value: selectedCommodityId,
-                                    hint: const Text('Select commodity'),
-                                    items: _commodities.map<DropdownMenuItem<String>>((c) {
-                                      final id = c['_id'] as String;
-                                      final disabled = blockedIds.contains(id) && id != selectedCommodityId;
-                                      return DropdownMenuItem<String>(
-                                        value: id,
-                                        enabled: !disabled,
-                                        child: Text(
-                                          c['name'] + (disabled ? ' (Pending)' : ''),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      );
-                                    }).toList(),
-                                    onChanged: (val) {
-                                      setStateDialog(() {
-                                        item['commodity'] = val;
-                                        item['unit'] = null; // reset unit when commodity changes
-                                      });
-                                    },
-                                  ),
-                                ),
-                                if (newItems.length > 1)
-                                  IconButton(
-                                    icon: const Icon(Icons.remove_circle, color: Colors.red),
-                                    onPressed: () => removeItem(idx),
-                                  ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                SizedBox(
-                                  width: 100,
-                                  child: TextFormField(
-                                    initialValue: item['quantity'].toString(),
-                                    decoration: const InputDecoration(
-                                      labelText: 'Quantity',
-                                      contentPadding: EdgeInsets.symmetric(horizontal: 4),
-                                    ),
-                                    keyboardType: TextInputType.number,
-                                    onChanged: (v) {
-                                      setStateDialog(() {
-                                        item['quantity'] = int.tryParse(v) ?? 1;
-                                      });
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: DropdownButtonFormField<String>(
-                                    value: item['unit'] as String?,
-                                    hint: const Text('Unit'),
-                                    items: unitOptions.map<DropdownMenuItem<String>>((u) {
-                                      return DropdownMenuItem<String>(value: u, child: Text(u));
-                                    }).toList(),
-                                    onChanged: selectedCommodityId == null
-                                        ? null
-                                        : (val) {
-                                            setStateDialog(() {
-                                              item['unit'] = val;
-                                            });
-                                          },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const Divider(),
-                      ],
-                    );
-                  }).toList(),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: TextButton.icon(
-                      icon: const Icon(Icons.add),
-                      label: const Text('Add another commodity'),
-                      onPressed: addItem,
-                    ),
-                  ),
-                  if (errorMsg != null)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Text(errorMsg!, style: const TextStyle(color: Colors.red)),
-                    ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: isSubmitting ? null : () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: isSubmitting ? null : submit,
-                child: isSubmitting ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Text('Submit'),
-              ),
-            ],
-          );
-        });
-      },
+      builder: (context) => NewRequestDialog(
+        commodities: _commodities,
+        blockedIds: blockedIds,
+      ),
     );
+
+    if (shouldRefresh == true && mounted) {
+      _fetchRequests();
+    }
   }
 
   Color _getStatusColor(String status) {
@@ -281,15 +105,16 @@ class _StockRequestsScreenState extends State<StockRequestsScreen> {
     }
   }
 
-  Widget _buildTimeline(List<dynamic> timeline) {
+  Widget _buildTimeline(BuildContext context, List<dynamic> timeline) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: Text(
-            'Request Timeline',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            l10n.requestTimeline,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
           ),
         ),
         ...timeline.asMap().entries.map((entry) {
@@ -375,6 +200,7 @@ class _StockRequestsScreenState extends State<StockRequestsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: RefreshIndicator(
@@ -390,7 +216,7 @@ class _StockRequestsScreenState extends State<StockRequestsScreen> {
                           children: [
                             Icon(LucideIcons.package, size: 64, color: Theme.of(context).disabledColor.withOpacity(0.1)),
                             const SizedBox(height: 16),
-                            Text('No stock requests found', style: TextStyle(color: Theme.of(context).disabledColor)),
+                            Text(l10n.noStockRequestsFound, style: TextStyle(color: Theme.of(context).disabledColor)),
                           ],
                         ),
                       ),
@@ -416,7 +242,7 @@ class _StockRequestsScreenState extends State<StockRequestsScreen> {
                             children: [
                               Expanded(
                                 child: Text(
-                                  'Request #${req['_id'].toString().substring(req['_id'].toString().length - 6).toUpperCase()}',
+                                  '${l10n.requests} #${req['_id'].toString().substring(req['_id'].toString().length - 6).toUpperCase()}',
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: Theme.of(context).colorScheme.onSurface,
@@ -441,7 +267,7 @@ class _StockRequestsScreenState extends State<StockRequestsScreen> {
                             ],
                           ),
                           subtitle: Text(
-                            '$formattedDate • ${items.length} items',
+                            '$formattedDate • ${items.length} ${l10n.items}',
                             style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
                           ),
                           children: [
@@ -461,7 +287,7 @@ class _StockRequestsScreenState extends State<StockRequestsScreen> {
                                 )),
                             if (req['timeline'] != null && (req['timeline'] as List).isNotEmpty) ...[
                               const Divider(height: 1),
-                              _buildTimeline(req['timeline'] as List),
+                              _buildTimeline(context, req['timeline'] as List),
                             ],
                             const SizedBox(height: 16),
                           ],
@@ -472,7 +298,7 @@ class _StockRequestsScreenState extends State<StockRequestsScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _openNewRequestDialog,
-        label: const Text('New Request'),
+        label: Text(l10n.newRequest),
         icon: const Icon(LucideIcons.plus, color: Colors.white),
         backgroundColor: const Color(0xFF4F46E5),
         foregroundColor: Colors.white,

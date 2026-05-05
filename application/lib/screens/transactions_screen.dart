@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:intl/intl.dart';
+import 'package:application/l10n/app_localizations.dart';
 import '../services/api_service.dart';
 import 'scanner_screen.dart';
 import 'make_sale_screen.dart';
@@ -27,6 +28,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     setState(() => _isLoading = true);
     try {
       final response = await ApiService.getTransactions();
+      if (!mounted) return;
       final data = jsonDecode(response.body);
       if (response.statusCode == 200) {
         setState(() => _transactions = data['data']);
@@ -34,13 +36,17 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     } catch (e) {
       debugPrint('Error fetching transactions: $e');
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: RefreshIndicator(
@@ -56,7 +62,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                           children: [
                             Icon(LucideIcons.receipt, size: 64, color: Theme.of(context).disabledColor.withOpacity(0.1)),
                             const SizedBox(height: 16),
-                            Text('No sales records found', style: TextStyle(color: Theme.of(context).disabledColor)),
+                            Text(l10n.noSalesRecordsFound, style: TextStyle(color: Theme.of(context).disabledColor)),
                           ],
                         ),
                       ),
@@ -140,7 +146,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             }
           }
         },
-        label: const Text('Make Sale'),
+        label: Text(l10n.makeSale),
         icon: const Icon(LucideIcons.plus, color: Colors.white),
         backgroundColor: const Color(0xFF4F46E5),
         foregroundColor: Colors.white,

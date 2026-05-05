@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:application/l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 import '../services/api_service.dart';
 
@@ -48,6 +49,8 @@ class _MakeSaleScreenState extends State<MakeSaleScreen> {
         if (retailerId != null) ApiService.getRetailerData(retailerId),
       ]);
 
+      if (!mounted) return;
+
       final customerRes = results[0];
       final customerData = jsonDecode(customerRes.body);
       
@@ -67,14 +70,19 @@ class _MakeSaleScreenState extends State<MakeSaleScreen> {
         }
       }
     } catch (e) {
-      setState(() => _errorMessage = 'Failed to load data. Please try again.');
+      if (mounted) {
+        setState(() => _errorMessage = 'Failed to load data. Please try again.');
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   Future<void> _submitSale() async {
     if (!_formKey.currentState!.validate() || _selectedCommodityId == null) return;
+    final l10n = AppLocalizations.of(context)!;
 
     setState(() => _isSubmitting = true);
     try {
@@ -84,27 +92,32 @@ class _MakeSaleScreenState extends State<MakeSaleScreen> {
         'amount': double.tryParse(_quantityController.text) ?? 1.0,
       });
 
+      if (!mounted) return;
+
       final data = jsonDecode(response.body);
       if (response.statusCode == 201 || data['status'] == 'success') {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Sale completed successfully!'), backgroundColor: Colors.green),
-          );
-          Navigator.pop(context, true); // Return true to refresh history
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.saleCompleted), backgroundColor: Colors.green),
+        );
+        Navigator.pop(context, true); // Return true to refresh history
       } else {
-        setState(() => _errorMessage = data['message'] ?? 'Transaction failed');
+        setState(() => _errorMessage = data['message'] ?? l10n.transactionFailed);
       }
     } catch (e) {
-      setState(() => _errorMessage = 'Network error. Please try again.');
+      if (mounted) {
+        setState(() => _errorMessage = 'Network error. Please try again.');
+      }
     } finally {
-      setState(() => _isSubmitting = false);
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
     final selectedCommodity = _availableCommodities.find(
       (c) => c['commodity']['_id'] == _selectedCommodityId,
     );
@@ -113,7 +126,7 @@ class _MakeSaleScreenState extends State<MakeSaleScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Complete Sale'),
+        title: Text(l10n.completeSale),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -144,7 +157,7 @@ class _MakeSaleScreenState extends State<MakeSaleScreen> {
 
                     // Customer Info Section
                     Text(
-                      'Customer Details', 
+                      l10n.customerDetails, 
                       style: TextStyle(
                         fontWeight: FontWeight.bold, 
                         fontSize: 16,
@@ -161,18 +174,18 @@ class _MakeSaleScreenState extends State<MakeSaleScreen> {
                       ),
                       child: Column(
                         children: [
-                          _InfoRow(label: 'Name', value: '${_customer?['firstName'] ?? '...'} ${_customer?['lastName'] ?? ''}'),
+                          _InfoRow(label: l10n.name, value: '${_customer?['firstName'] ?? '...'} ${_customer?['lastName'] ?? ''}'),
                           Divider(height: 24, color: isDark ? Colors.white10 : Colors.grey.shade100),
-                          _InfoRow(label: 'Fayda ID', value: widget.faydaId),
+                          _InfoRow(label: l10n.faydaId, value: widget.faydaId),
                           Divider(height: 24, color: isDark ? Colors.white10 : Colors.grey.shade100),
-                          _InfoRow(label: 'Woreda', value: _customer?['woreda']?['name'] ?? '...'),
+                          _InfoRow(label: l10n.woreda, value: _customer?['woreda']?['name'] ?? '...'),
                         ],
                       ),
                     ),
 
                     const SizedBox(height: 32),
                     Text(
-                      'Transaction Details', 
+                      l10n.transactionDetails, 
                       style: TextStyle(
                         fontWeight: FontWeight.bold, 
                         fontSize: 16,
@@ -183,7 +196,7 @@ class _MakeSaleScreenState extends State<MakeSaleScreen> {
 
                     // Commodity Selection
                     Text(
-                      'Commodity', 
+                      l10n.commodity, 
                       style: TextStyle(
                         fontSize: 14, 
                         fontWeight: FontWeight.w600,
@@ -193,7 +206,7 @@ class _MakeSaleScreenState extends State<MakeSaleScreen> {
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
                       value: _selectedCommodityId,
-                      hint: Text('Select a commodity', style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4))),
+                      hint: Text(l10n.selectCommodity, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4))),
                       dropdownColor: Theme.of(context).cardTheme.color,
                       style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                       decoration: InputDecoration(
@@ -222,7 +235,7 @@ class _MakeSaleScreenState extends State<MakeSaleScreen> {
 
                     // Quantity
                     Text(
-                      'Quantity ${unit.isNotEmpty ? "($unit)" : ""}', 
+                      '${l10n.quantity} ${unit.isNotEmpty ? "($unit)" : ""}', 
                       style: TextStyle(
                         fontSize: 14, 
                         fontWeight: FontWeight.w600,
@@ -268,7 +281,7 @@ class _MakeSaleScreenState extends State<MakeSaleScreen> {
                         ),
                         child: _isSubmitting
                             ? const CircularProgressIndicator(color: Colors.white)
-                            : const Text('Complete Sale', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            : Text(l10n.completeSale, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ],

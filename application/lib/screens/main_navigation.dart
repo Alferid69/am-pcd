@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
+import 'package:application/l10n/app_localizations.dart';
 import 'transactions_screen.dart';
 import 'stock_requests_screen.dart';
 import 'inventory_screen.dart';
@@ -8,6 +9,7 @@ import 'notifications_screen.dart';
 import '../providers/theme_provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/notification_provider.dart';
+import '../providers/locale_provider.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -29,13 +31,34 @@ class _MainNavigationState extends State<MainNavigation> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final localeProvider = Provider.of<LocaleProvider>(context);
     final isDark = themeProvider.themeMode == ThemeMode.dark;
-    final user = Provider.of<AuthProvider>(context).user;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_selectedIndex == 0 ? 'AM-PCD' : _getTitle(_selectedIndex)),
+        title: Text(_selectedIndex == 0 ? 'AM-PCD' : _getTitle(context, _selectedIndex)),
         actions: [
+          DropdownButton<Locale>(
+            value: localeProvider.locale,
+            underline: const SizedBox(),
+            icon: Icon(LucideIcons.languages, size: 20, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+            items: [
+              DropdownMenuItem(
+                value: const Locale('en'),
+                child: Text(l10n.english, style: const TextStyle(fontSize: 14)),
+              ),
+              DropdownMenuItem(
+                value: const Locale('am'),
+                child: Text(l10n.amharic, style: const TextStyle(fontSize: 14)),
+              ),
+            ],
+            onChanged: (Locale? newLocale) {
+              if (localeProvider.locale != newLocale && newLocale != null) {
+                localeProvider.setLocale(newLocale);
+              }
+            },
+          ),
           IconButton(
             onPressed: () => themeProvider.toggleTheme(),
             icon: Icon(
@@ -69,16 +92,16 @@ class _MainNavigationState extends State<MainNavigation> {
           indicatorColor: Theme.of(context).primaryColor.withOpacity(0.1),
           destinations:  [
             NavigationDestination(
-              icon: Icon(LucideIcons.layoutDashboard),
-              label: 'Overview',
+              icon: const Icon(LucideIcons.layoutDashboard),
+              label: l10n.overview,
             ),
             NavigationDestination(
-              icon: Icon(LucideIcons.receipt),
-              label: 'Sales',
+              icon: const Icon(LucideIcons.receipt),
+              label: l10n.sales,
             ),
             NavigationDestination(
-              icon: Icon(LucideIcons.package),
-              label: 'Requests',
+              icon: const Icon(LucideIcons.package),
+              label: l10n.requests,
             ),
             NavigationDestination(
               icon: Consumer<NotificationProvider>(
@@ -88,7 +111,7 @@ class _MainNavigationState extends State<MainNavigation> {
                   child: const Icon(LucideIcons.bell),
                 ),
               ),
-              label: 'Alerts',
+              label: l10n.alerts,
             ),
           ],
         ),
@@ -96,16 +119,17 @@ class _MainNavigationState extends State<MainNavigation> {
     );
   }
 
-  String _getTitle(int index) {
+  String _getTitle(BuildContext context, int index) {
+    final l10n = AppLocalizations.of(context)!;
     switch (index) {
       case 0:
-        return 'Overview';
+        return l10n.overview;
       case 1:
-        return 'Sales History';
+        return l10n.salesHistory;
       case 2:
-        return 'Stock Requests';
+        return l10n.stockRequests;
       case 3:
-        return 'Notifications';
+        return l10n.notifications;
       default:
         return 'AM-PCD';
     }

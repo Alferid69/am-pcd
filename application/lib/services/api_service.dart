@@ -6,7 +6,8 @@ class ApiService {
   // Use 10.0.2.2 for Android Emulator to access localhost
   // Change to your machine's IP if testing on physical device
   // static const String baseUrl = 'http://10.0.2.2:3000/api/v1';
-  static const String baseUrl = 'http://10.144.37.112:3000/api/v1';
+  // static const String baseUrl = 'http://10.144.37.112:3000/api/v1';
+  static const String baseUrl = 'http://ec2-51-20-63-138.eu-north-1.compute.amazonaws.com:5000/api/v1';
   static Function()? onUnauthorized;
 
   static Future<String?> getToken() async {

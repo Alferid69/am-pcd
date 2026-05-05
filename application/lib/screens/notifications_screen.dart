@@ -1,10 +1,8 @@
-import 'dart:convert';
+import 'package:application/l10n/app_localizations.dart';
 import 'package:application/providers/notification_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../services/api_service.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -19,6 +17,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final notificationProvider = Provider.of<NotificationProvider>(context);
     final notifications = notificationProvider.notifications;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -35,7 +34,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     TextButton.icon(
                       onPressed: notificationProvider.markAllAsRead,
                       icon: const Icon(LucideIcons.checkCheck, size: 16),
-                      label: const Text('Mark all as read', style: TextStyle(fontSize: 12)),
+                      label: Text(l10n.markAllAsRead, style: const TextStyle(fontSize: 12)),
                     ),
                   ],
                 ),
@@ -50,7 +49,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             children: [
                               Icon(LucideIcons.bellOff, size: 64, color: Theme.of(context).disabledColor.withOpacity(0.1)),
                               const SizedBox(height: 16),
-                              Text('No notifications', style: TextStyle(color: Theme.of(context).disabledColor)),
+                              Text(l10n.noNotifications, style: TextStyle(color: Theme.of(context).disabledColor)),
                             ],
                           ),
                         ),
@@ -102,7 +101,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      notification['title'] ?? 'Notification',
+                                      notification['title'] ?? l10n.notifications,
                                       style: TextStyle(
                                         fontWeight: isRead ? FontWeight.w500 : FontWeight.bold,
                                         fontSize: 15,

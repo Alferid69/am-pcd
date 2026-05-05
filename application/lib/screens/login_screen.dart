@@ -1,7 +1,10 @@
+import 'dart:io' as io;
 import 'package:application/providers/theme_provider.dart';
+import 'package:application/providers/locale_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:application/l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -25,6 +28,10 @@ class _LoginScreenState extends State<LoginScreen> {
         _usernameController.text.trim(),
         _passwordController.text.trim(),
       );
+    } on RoleException {
+      if (mounted) {
+        _showUnauthorizedDialog();
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -39,11 +46,57 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  void _showUnauthorizedDialog() {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Center(
+          child: Icon(LucideIcons.alertTriangle, color: Colors.red, size: 48),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              l10n.onlyRetailerAccess,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12, left: 12, right: 12),
+            child: SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () => io.exit(0),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
+                ),
+                child: Text(l10n.exitApp, style: const TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isLoading = Provider.of<AuthProvider>(context).isLoading;
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final localeProvider = Provider.of<LocaleProvider>(context);
     final isDark = themeProvider.themeMode == ThemeMode.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -73,6 +126,27 @@ class _LoginScreenState extends State<LoginScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
+                        DropdownButton<Locale>(
+                          value: localeProvider.locale,
+                          underline: const SizedBox(),
+                          icon: Icon(LucideIcons.languages, size: 20, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+                          items: [
+                            DropdownMenuItem(
+                              value: const Locale('en'),
+                              child: Text(l10n.english, style: const TextStyle(fontSize: 14)),
+                            ),
+                            DropdownMenuItem(
+                              value: const Locale('am'),
+                              child: Text(l10n.amharic, style: const TextStyle(fontSize: 14)),
+                            ),
+                          ],
+                          onChanged: (Locale? newLocale) {
+                            if (localeProvider.locale != newLocale && newLocale != null) {
+                              localeProvider.setLocale(newLocale);
+                            }
+                          },
+                        ),
+                        const SizedBox(width: 8),
                         IconButton(
                           onPressed: () => themeProvider.toggleTheme(),
                           icon: Icon(
@@ -98,7 +172,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      'Welcome Back',
+                      l10n.welcomeBack,
                       style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: Theme.of(context).colorScheme.onSurface,
@@ -106,14 +180,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Sign in to manage your cooperative',
+                      l10n.signInToManage,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                           ),
                     ),
                     const SizedBox(height: 48),
                     Text(
-                      'Username',
+                      l10n.username,
                       style: Theme.of(context).textTheme.labelLarge?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -123,7 +197,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       controller: _usernameController,
                       style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                       decoration: InputDecoration(
-                        hintText: 'Enter your username',
+                        hintText: l10n.enterUsername,
                         hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3)),
                         prefixIcon: Icon(LucideIcons.user, size: 20, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
                         border: OutlineInputBorder(
@@ -142,11 +216,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         fillColor: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
                       ),
                       validator: (value) =>
-                          (value == null || value.isEmpty) ? 'Enter your username' : null,
+                          (value == null || value.isEmpty) ? l10n.enterUsername : null,
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      'Password',
+                      l10n.password,
                       style: Theme.of(context).textTheme.labelLarge?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -157,7 +231,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       obscureText: !_isPasswordVisible,
                       style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                       decoration: InputDecoration(
-                        hintText: 'Enter your password',
+                        hintText: l10n.enterPassword,
                         hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3)),
                         prefixIcon: Icon(LucideIcons.lock, size: 20, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
                         suffixIcon: IconButton(
@@ -184,7 +258,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         fillColor: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
                       ),
                       validator: (value) =>
-                          (value == null || value.length < 6) ? 'Password too short' : null,
+                          (value == null || value.length < 6) ? l10n.passwordTooShort : null,
                     ),
                     const SizedBox(height: 40),
                     SizedBox(
@@ -209,9 +283,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                   strokeWidth: 2,
                                 ),
                               )
-                            : const Text(
-                                'Sign In',
-                                style: TextStyle(
+                            : Text(
+                                l10n.signIn,
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),

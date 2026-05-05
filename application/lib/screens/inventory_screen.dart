@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:application/l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 import '../services/api_service.dart';
 
@@ -28,6 +29,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
       final user = Provider.of<AuthProvider>(context, listen: false).user;
       if (user != null && user['worksAt'] != null) {
         final response = await ApiService.getRetailerData(user['worksAt']);
+        if (!mounted) return;
         final data = jsonDecode(response.body);
         if (response.statusCode == 200) {
           setState(() => _retailerData = data['data']);
@@ -36,7 +38,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
     } catch (e) {
       debugPrint('Error fetching inventory: $e');
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -45,6 +49,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
     final user = Provider.of<AuthProvider>(context).user;
     final inventory = _retailerData?['availableCommodity'] as List? ?? [];
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -84,7 +89,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _retailerData?['name'] ?? 'Loading...',
+                            _retailerData?['name'] ?? l10n.loading,
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 22,
@@ -97,7 +102,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                               const Icon(LucideIcons.mapPin, color: Colors.white70, size: 14),
                               const SizedBox(width: 6),
                               Text(
-                                'Woreda: ${_retailerData?['woredaOffice']?['name'] ?? '...'}',
+                                '${l10n.woreda}: ${_retailerData?['woredaOffice']?['name'] ?? '...'}',
                                 style: const TextStyle(color: Colors.white70, fontSize: 14),
                               ),
                             ],
@@ -110,7 +115,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
-                              'Retailer: ${user?['firstName']} ${user?['lastName']}',
+                              '${l10n.retailer}: ${user?['firstName']} ${user?['lastName']}',
                               style: const TextStyle(color: Colors.white, fontSize: 12),
                             ),
                           ),
@@ -122,7 +127,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Current Inventory',
+                          l10n.currentInventory,
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -130,7 +135,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                           ),
                         ),
                         Text(
-                          '${inventory.length} Items',
+                          '${inventory.length} ${l10n.items}',
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                             fontSize: 14,
@@ -148,7 +153,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                               Icon(LucideIcons.packageSearch, size: 48, color: Theme.of(context).disabledColor.withOpacity(0.1)),
                               const SizedBox(height: 12),
                               Text(
-                                'No stock available',
+                                l10n.noStockAvailable,
                                 style: TextStyle(color: Theme.of(context).disabledColor),
                               ),
                             ],

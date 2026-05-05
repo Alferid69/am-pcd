@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:application/l10n/app_localizations.dart';
 
 class ScannerScreen extends StatefulWidget {
   const ScannerScreen({super.key});
@@ -46,9 +47,10 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Scan QR Code'),
+        title: Text(l10n.scanQRCode),
         actions: [
           IconButton(
             icon: ValueListenableBuilder(
@@ -124,9 +126,9 @@ class _ScannerScreenState extends State<ScannerScreen> {
                   color: Colors.black54,
                   borderRadius: BorderRadius.circular(30),
                 ),
-                child: const Text(
-                  'Center the Fayda ID QR in the box',
-                  style: TextStyle(color: Colors.white, fontSize: 14),
+                child: Text(
+                  l10n.centerFaydaQR,
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
                 ),
               ),
             ),
