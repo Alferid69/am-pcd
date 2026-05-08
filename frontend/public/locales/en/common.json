@@ -118,6 +118,7 @@
     "processing": "Processing...",
     "firstName": "First Name",
     "lastName": "Last Name",
+    "kg": "kg",
     "password": "Password",
     "resetting": "Resetting...",
     "deleting": "Deleting...",
@@ -376,6 +377,9 @@
     "passwordSuccess": "Password changed successfully.",
     "passwordMismatch": "New passwords do not match.",
     "passwordTooShort": "New password must be at least 6 characters.",
+    "passwordError": "Failed to update password.",
+    "profileError": "Failed to update profile.",
+    "loading": "Loading settings...",
     "unableLoadUser": "Unable to load user data. Please refresh the page."
   },
   "commoditiesManagement": {

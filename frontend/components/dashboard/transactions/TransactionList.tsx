@@ -73,26 +73,44 @@ export default function TransactionList({
       t("transactions.totalPrice"),
       t("common.date"),
     ];
-    const csvContent = [
-      headers.join(","),
-      ...filteredTransactions.map((t) => {
-        const customer = `${t.customer?.firstName || ""} ${t.customer?.lastName || ""}`;
-        const commodity = t.commodity?.name || "";
-        const qty = t.amount;
-        const price = t.commodity?.price || 0;
-        const total = (t.amount || 0) * price;
-        const date = t.createdAt
-          ? format(new Date(t.createdAt), "yyyy-MM-dd HH:mm")
-          : "";
-        return [customer, commodity, qty, price, total, date]
-          .map((val) => `"${val}"`)
-          .join(",");
-      }),
-    ].join("\n");
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
+    const escapeCSV = (val: any) => {
+      if (val === null || val === undefined) return "";
+      const stringVal = String(val);
+      if (
+        stringVal.includes(",") ||
+        stringVal.includes("\"") ||
+        stringVal.includes("\n") ||
+        stringVal.includes("\r")
+      ) {
+        return `"${stringVal.replace(/"/g, '""')}"`;
+      }
+      return stringVal;
+    };
+
+    const rows = filteredTransactions.map((tx) => {
+      const customer =
+        `${tx.customer?.firstName || ""} ${tx.customer?.lastName || ""}`.trim();
+      const commodity = tx.commodity?.name || "";
+      const qty = tx.amount || 0;
+      const price = tx.commodity?.price || 0;
+      const total = qty * price;
+      const date = tx.createdAt
+        ? ` ${format(new Date(tx.createdAt), "MMM d, yyyy h:mm a")}`
+        : "";
+
+      return [customer, commodity, qty, price, total, date]
+        .map(escapeCSV)
+        .join(",");
+    });
+
+    const csvContent = [headers.map(escapeCSV).join(","), ...rows].join("\n");
+    const BOM = "\uFEFF";
+    const blob = new Blob([BOM + csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
     const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
     link.setAttribute("href", url);
     link.setAttribute(
       "download",
@@ -102,18 +120,19 @@ export default function TransactionList({
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
-  const filteredTransactions = transactions.filter((t) => {
+  const filteredTransactions = transactions.filter((tx) => {
     const term = searchTerm.toLowerCase();
-    const customerName = `${t.customer?.firstName || ""} ${
-      t.customer?.lastName || ""
+    const customerName = `${tx.customer?.firstName || ""} ${
+      tx.customer?.lastName || ""
     }`.toLowerCase();
 
     return (
       customerName.includes(term) ||
-      t.customerFayda.includes(term) ||
-      t.commodity?.name.toLowerCase().includes(term)
+      tx.customerFayda.includes(term) ||
+      tx.commodity?.name.toLowerCase().includes(term)
     );
   });
 

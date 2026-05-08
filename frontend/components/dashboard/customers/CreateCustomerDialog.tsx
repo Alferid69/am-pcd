@@ -138,14 +138,13 @@ export default function CreateCustomerDialog() {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger render={<Button className="bg-(--bpds-primary) hover:bg-(--bpds-primary)/90" />}>
         <Plus className="mr-2 h-4 w-4" />
-        Add Customer
+        {t("customers.add")}
       </DialogTrigger>
       <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
-          <DialogTitle>Register New Customer</DialogTitle>
+          <DialogTitle>{t("customers.registerNew")}</DialogTitle>
           <DialogDescription>
-            Enter the customer&lsquo;s details including their 16-digit Fayda
-            National ID.
+            {t("customers.registerDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -159,16 +158,16 @@ export default function CreateCustomerDialog() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {userRole === "admin" && (
             <div className="space-y-2">
-              <Label htmlFor="woreda">Woreda Office</Label>
+              <Label htmlFor="woreda">{t("woredas.offices")}</Label>
               <Select
                 value={formData.woreda}
                 onValueChange={(val) => handleSelectChange("woreda", val as string)}
                 disabled={isLoadingWoredas}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder={isLoadingWoredas ? "Loading woredas..." : "Select Woreda"}>
+                  <SelectValue placeholder={isLoadingWoredas ? t("woredas.loadingWoredas") : t("entities.selectWoreda")}>
                     {formData.woreda
-                      ? woredas.find((w: any) => w._id === formData.woreda)?.name || "Select Woreda"
+                      ? woredas.find((w: any) => w._id === formData.woreda)?.name || t("entities.selectWoreda")
                       : null}
                   </SelectValue>
                 </SelectTrigger>
@@ -185,7 +184,7 @@ export default function CreateCustomerDialog() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="firstName">First Name</Label>
+              <Label htmlFor="firstName">{t("common.firstName")}</Label>
               <Input
                 id="firstName"
                 name="firstName"
@@ -195,7 +194,7 @@ export default function CreateCustomerDialog() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name</Label>
+              <Label htmlFor="lastName">{t("common.lastName")}</Label>
               <Input
                 id="lastName"
                 name="lastName"
@@ -208,7 +207,7 @@ export default function CreateCustomerDialog() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="gender">Gender</Label>
+              <Label htmlFor="gender">{t("common.gender")}</Label>
               <Select
                 value={formData.gender}
                 onValueChange={(value) =>
@@ -216,16 +215,16 @@ export default function CreateCustomerDialog() {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select gender" />
+                  <SelectValue placeholder={t("customers.selectGender")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="male">Male</SelectItem>
-                  <SelectItem value="female">Female</SelectItem>
+                  <SelectItem value="male">{t("common.male")}</SelectItem>
+                  <SelectItem value="female">{t("common.female")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="age">Age</Label>
+              <Label htmlFor="age">{t("common.age")}</Label>
               <Input
                 id="age"
                 name="age"
@@ -239,13 +238,13 @@ export default function CreateCustomerDialog() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="fayda">Fayda National ID (16 digits)</Label>
+            <Label htmlFor="fayda">{t("customers.faydaIDLabel")}</Label>
             <Input
               id="fayda"
               name="fayda"
               type="text"
               maxLength={16}
-              placeholder="e.g. 1234567890123456"
+              placeholder={t("customers.faydaPlaceholder")}
               value={formData.fayda}
               onChange={handleChange}
               required
@@ -254,34 +253,34 @@ export default function CreateCustomerDialog() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
+              <Label htmlFor="phone">{t("common.phone")}</Label>
               <Input
                 id="phone"
                 name="phone"
                 type="tel"
-                placeholder="+251..."
+                placeholder={t("common.phonePlaceholder")}
                 value={formData.phone}
                 onChange={handleChange}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="kebele">Kebele</Label>
+              <Label htmlFor="kebele">{t("customers.kebele")}</Label>
               <Input
                 id="kebele"
                 name="kebele"
-                placeholder="e.g. 01"
+                placeholder={t("customers.kebelePlaceholder")}
                 value={formData.kebele}
                 onChange={handleChange}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="houseNumber">House Number</Label>
+              <Label htmlFor="houseNumber">{t("customers.houseNumber")}</Label>
               <Input
                 id="houseNumber"
                 name="houseNumber"
-                placeholder="e.g. 123"
+                placeholder={t("customers.houseNumberPlaceholder")}
                 value={formData.houseNumber}
                 onChange={handleChange}
                 required
@@ -296,10 +295,10 @@ export default function CreateCustomerDialog() {
               onClick={() => setIsOpen(false)}
               disabled={createMutation.isPending}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={createMutation.isPending}>
-              {createMutation.isPending ? "Registering..." : "Register"}
+              {createMutation.isPending ? t("customers.registering") : t("customers.register")}
             </Button>
           </DialogFooter>
         </form>

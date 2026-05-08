@@ -3,7 +3,6 @@
 import React from "react";
 import { useAuth } from "../../../contexts/AuthContext";
 import TransactionList from "./TransactionList";
-import MakeSaleDialog from "./MakeSaleDialog";
 import InventoryOverview from "./InventoryOverview";
 import { Store } from "lucide-react";
 import { useT } from "next-i18next/client";
@@ -24,9 +23,6 @@ export default function RetailerTransactions() {
           <p className="text-muted-foreground mt-1 text-sm">
             {t("transactions.manageSubtitle")}
           </p>
-        </div>
-        <div className="flex-shrink-0">
-          <MakeSaleDialog />
         </div>
       </div>
 

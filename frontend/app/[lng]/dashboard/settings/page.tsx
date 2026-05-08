@@ -12,6 +12,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
+import { useT } from "next-i18next/client";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { updateProfile, updatePassword } from "../../../../api/apiUser";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../../components/ui/card";
@@ -19,14 +20,8 @@ import { Input } from "../../../../components/ui/input";
 import { Button } from "../../../../components/ui/button";
 import { Label } from "../../../../components/ui/label";
 import { Badge } from "../../../../components/ui/badge";
-
-const roleLabelMap: Record<string, string> = {
-  admin: "System Admin",
-  bureau: "Trade Bureau",
-  zone: "Zone Office",
-  woreda: "Woreda Office",
-  retailer: "Retailer Cooperative",
-};
+import { roleLabels } from "../../../../components/dashboard/data";
+import { RoleKey } from "../../../../components/dashboard/types";
 
 function FeedbackBanner({
   type,
@@ -59,6 +54,7 @@ function SettingsForm({ user, userRole, refreshUser }: {
   userRole: string;
   refreshUser: () => Promise<void>;
 }) {
+  const { t } = useT("common");
   // Profile form — initialised once from the prop, no useEffect needed.
   const [profileForm, setProfileForm] = useState({
     firstName: user.firstName ?? "",
@@ -87,13 +83,13 @@ function SettingsForm({ user, userRole, refreshUser }: {
     mutationFn: updateProfile,
     onSuccess: async () => {
       await refreshUser();
-      setProfileFeedback({ type: "success", message: "Profile updated successfully." });
+      setProfileFeedback({ type: "success", message: t("settings.profileSuccess") });
       setTimeout(() => setProfileFeedback(null), 4000);
     },
     onError: (err: any) => {
       setProfileFeedback({
         type: "error",
-        message: err?.response?.data?.message ?? "Failed to update profile.",
+        message: err?.response?.data?.message ?? t("settings.profileError"),
       });
     },
   });
@@ -102,13 +98,13 @@ function SettingsForm({ user, userRole, refreshUser }: {
     mutationFn: updatePassword,
     onSuccess: () => {
       setPasswordForm({ password: "", newPassword: "", confirmNewPassword: "" });
-      setPasswordFeedback({ type: "success", message: "Password changed successfully." });
+      setPasswordFeedback({ type: "success", message: t("settings.passwordSuccess") });
       setTimeout(() => setPasswordFeedback(null), 4000);
     },
     onError: (err: any) => {
       setPasswordFeedback({
         type: "error",
-        message: err?.response?.data?.message ?? "Failed to update password.",
+        message: err?.response?.data?.message ?? t("settings.passwordError"),
       });
     },
   });
@@ -130,11 +126,11 @@ function SettingsForm({ user, userRole, refreshUser }: {
     setPasswordFeedback(null);
 
     if (passwordForm.newPassword !== passwordForm.confirmNewPassword) {
-      setPasswordFeedback({ type: "error", message: "New passwords do not match." });
+      setPasswordFeedback({ type: "error", message: t("settings.passwordMismatch") });
       return;
     }
     if (passwordForm.newPassword.length < 6) {
-      setPasswordFeedback({ type: "error", message: "New password must be at least 6 characters." });
+      setPasswordFeedback({ type: "error", message: t("settings.passwordTooShort") });
       return;
     }
 
@@ -149,10 +145,10 @@ function SettingsForm({ user, userRole, refreshUser }: {
       {/* Header */}
       <div>
         <h2 className="text-2xl font-bold tracking-tight text-(--bpds-on-surface) flex items-center gap-2">
-          <User className="w-6 h-6 text-(--bpds-primary)" /> Settings
+          <User className="w-6 h-6 text-(--bpds-primary)" /> {t("dashboard.nav.settings")}
         </h2>
         <p className="text-muted-foreground mt-1 text-sm">
-          Manage your account information and security settings.
+          {t("settings.manageSubtitle")}
         </p>
       </div>
 
@@ -160,7 +156,7 @@ function SettingsForm({ user, userRole, refreshUser }: {
       <Card className="bg-(--bpds-surface) border-(--bpds-outline-variant)">
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-            Account Overview
+            {t("settings.accountOverview")}
           </CardTitle>
         </CardHeader>
         <CardContent className="flex items-center gap-4">
@@ -175,7 +171,7 @@ function SettingsForm({ user, userRole, refreshUser }: {
             <div className="mt-1 flex items-center gap-2">
               <Shield className="h-3.5 w-3.5 text-indigo-500" />
               <Badge className="text-xs bg-indigo-100 text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400">
-                {roleLabelMap[userRole] ?? userRole}
+                {t(roleLabels[userRole as RoleKey] ?? userRole)}
               </Badge>
             </div>
           </div>
@@ -186,10 +182,10 @@ function SettingsForm({ user, userRole, refreshUser }: {
       <Card className="bg-(--bpds-surface) border-(--bpds-outline-variant)">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <User className="h-4 w-4 text-(--bpds-primary)" /> Profile Information
+            <User className="h-4 w-4 text-(--bpds-primary)" /> {t("settings.profileInfo")}
           </CardTitle>
           <CardDescription>
-            Update your first name, last name, and username. These changes are reflected immediately across the system.
+            {t("settings.profileDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -200,7 +196,7 @@ function SettingsForm({ user, userRole, refreshUser }: {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="firstName">First Name</Label>
+                <Label htmlFor="firstName">{t("common.firstName")}</Label>
                 <Input
                   id="firstName"
                   value={profileForm.firstName}
@@ -211,7 +207,7 @@ function SettingsForm({ user, userRole, refreshUser }: {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="lastName">Last Name</Label>
+                <Label htmlFor="lastName">{t("common.lastName")}</Label>
                 <Input
                   id="lastName"
                   value={profileForm.lastName}
@@ -224,7 +220,7 @@ function SettingsForm({ user, userRole, refreshUser }: {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username">{t("usernameLabel")}</Label>
               <Input
                 id="username"
                 value={profileForm.username}
@@ -238,7 +234,7 @@ function SettingsForm({ user, userRole, refreshUser }: {
             <div className="flex justify-end pt-2">
               <Button type="submit" disabled={!profileHasChanges || profileMutation.isPending}>
                 <Save className="h-4 w-4 mr-2" />
-                {profileMutation.isPending ? "Saving..." : "Save Changes"}
+                {profileMutation.isPending ? t("common.saving") : t("common.saveChanges")}
               </Button>
             </div>
           </form>
@@ -249,10 +245,10 @@ function SettingsForm({ user, userRole, refreshUser }: {
       <Card className="bg-(--bpds-surface) border-(--bpds-outline-variant)">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Lock className="h-4 w-4 text-(--bpds-primary)" /> Change Password
+            <Lock className="h-4 w-4 text-(--bpds-primary)" /> {t("settings.changePassword")}
           </CardTitle>
           <CardDescription>
-            Enter your current password to authorize the change, then set a new one.
+            {t("settings.passwordDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -262,7 +258,7 @@ function SettingsForm({ user, userRole, refreshUser }: {
             )}
 
             <div className="space-y-1.5">
-              <Label htmlFor="currentPassword">Current Password</Label>
+              <Label htmlFor="currentPassword">{t("settings.currentPassword")}</Label>
               <div className="relative">
                 <Input
                   id="currentPassword"
@@ -284,7 +280,7 @@ function SettingsForm({ user, userRole, refreshUser }: {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="newPassword">New Password</Label>
+              <Label htmlFor="newPassword">{t("settings.newPassword")}</Label>
               <div className="relative">
                 <Input
                   id="newPassword"
@@ -307,7 +303,7 @@ function SettingsForm({ user, userRole, refreshUser }: {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="confirmNewPassword">Confirm New Password</Label>
+              <Label htmlFor="confirmNewPassword">{t("settings.confirmNewPassword")}</Label>
               <Input
                 id="confirmNewPassword"
                 type="password"
@@ -322,7 +318,7 @@ function SettingsForm({ user, userRole, refreshUser }: {
             <div className="flex justify-end pt-2">
               <Button type="submit" disabled={passwordMutation.isPending}>
                 <Lock className="h-4 w-4 mr-2" />
-                {passwordMutation.isPending ? "Updating..." : "Update Password"}
+                {passwordMutation.isPending ? t("settings.updating") : t("settings.updatePassword")}
               </Button>
             </div>
           </form>
@@ -336,11 +332,12 @@ function SettingsForm({ user, userRole, refreshUser }: {
 // The `key={user._id}` ensures the form re-mounts fresh if the user identity changes.
 export default function SettingsPage() {
   const { user, userRole, refreshUser, isLoading } = useAuth();
+  const { t } = useT("common");
 
   if (isLoading) {
     return (
       <div className="flex justify-center py-20">
-        <p className="text-muted-foreground animate-pulse">Loading settings...</p>
+        <p className="text-muted-foreground animate-pulse">{t("settings.loading")}</p>
       </div>
     );
   }
@@ -348,7 +345,7 @@ export default function SettingsPage() {
   if (!user) {
     return (
       <div className="flex justify-center py-20 text-muted-foreground">
-        Unable to load user data. Please refresh the page.
+        {t("settings.unableLoadUser")}
       </div>
     );
   }

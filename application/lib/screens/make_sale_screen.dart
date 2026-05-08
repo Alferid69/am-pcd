@@ -18,11 +18,11 @@ class MakeSaleScreen extends StatefulWidget {
 class _MakeSaleScreenState extends State<MakeSaleScreen> {
   final _formKey = GlobalKey<FormState>();
   final _quantityController = TextEditingController(text: '1');
-  
+
   Map<String, dynamic>? _customer;
   List<dynamic> _availableCommodities = [];
   String? _selectedCommodityId;
-  
+
   bool _isLoading = true;
   bool _isSubmitting = false;
   String? _errorMessage;
@@ -53,11 +53,13 @@ class _MakeSaleScreenState extends State<MakeSaleScreen> {
 
       final customerRes = results[0];
       final customerData = jsonDecode(customerRes.body);
-      
+
       if (customerRes.statusCode == 200) {
         setState(() => _customer = customerData['data']['customer']);
       } else {
-        setState(() => _errorMessage = customerData['message'] ?? 'Customer not found');
+        setState(
+          () => _errorMessage = customerData['message'] ?? 'Customer not found',
+        );
       }
 
       if (results.length > 1) {
@@ -65,13 +67,16 @@ class _MakeSaleScreenState extends State<MakeSaleScreen> {
         final retailerData = jsonDecode(retailerRes.body);
         if (retailerRes.statusCode == 200) {
           setState(() {
-            _availableCommodities = retailerData['data']['availableCommodity'] ?? [];
+            _availableCommodities =
+                retailerData['data']['availableCommodity'] ?? [];
           });
         }
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _errorMessage = 'Failed to load data. Please try again.');
+        setState(
+          () => _errorMessage = 'Failed to load data. Please try again.',
+        );
       }
     } finally {
       if (mounted) {
@@ -81,7 +86,8 @@ class _MakeSaleScreenState extends State<MakeSaleScreen> {
   }
 
   Future<void> _submitSale() async {
-    if (!_formKey.currentState!.validate() || _selectedCommodityId == null) return;
+    if (!_formKey.currentState!.validate() || _selectedCommodityId == null)
+      return;
     final l10n = AppLocalizations.of(context)!;
 
     setState(() => _isSubmitting = true);
@@ -97,11 +103,16 @@ class _MakeSaleScreenState extends State<MakeSaleScreen> {
       final data = jsonDecode(response.body);
       if (response.statusCode == 201 || data['status'] == 'success') {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.saleCompleted), backgroundColor: Colors.green),
+          SnackBar(
+            content: Text(l10n.saleCompleted),
+            backgroundColor: Colors.green,
+          ),
         );
         Navigator.pop(context, true); // Return true to refresh history
       } else {
-        setState(() => _errorMessage = data['message'] ?? l10n.transactionFailed);
+        setState(
+          () => _errorMessage = data['message'] ?? l10n.transactionFailed,
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -125,9 +136,7 @@ class _MakeSaleScreenState extends State<MakeSaleScreen> {
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: Text(l10n.completeSale),
-      ),
+      appBar: AppBar(title: Text(l10n.completeSale)),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -142,27 +151,45 @@ class _MakeSaleScreenState extends State<MakeSaleScreen> {
                         padding: const EdgeInsets.all(12),
                         margin: const EdgeInsets.only(bottom: 24),
                         decoration: BoxDecoration(
-                          color: Colors.red.shade50.withOpacity(isDark ? 0.1 : 1),
+                          color: Colors.red.shade50.withOpacity(
+                            isDark ? 0.1 : 1,
+                          ),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.red.shade100.withOpacity(isDark ? 0.2 : 1)),
+                          border: Border.all(
+                            color: Colors.red.shade100.withOpacity(
+                              isDark ? 0.2 : 1,
+                            ),
+                          ),
                         ),
                         child: Row(
                           children: [
-                            const Icon(LucideIcons.alertCircle, color: Colors.red, size: 20),
+                            const Icon(
+                              LucideIcons.alertCircle,
+                              color: Colors.red,
+                              size: 20,
+                            ),
                             const SizedBox(width: 12),
-                            Expanded(child: Text(_errorMessage!, style: const TextStyle(color: Colors.red, fontSize: 13))),
+                            Expanded(
+                              child: Text(
+                                _errorMessage!,
+                                style: const TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
 
                     // Customer Info Section
                     Text(
-                      l10n.customerDetails, 
+                      l10n.customerDetails,
                       style: TextStyle(
-                        fontWeight: FontWeight.bold, 
+                        fontWeight: FontWeight.bold,
                         fontSize: 16,
                         color: Theme.of(context).colorScheme.onSurface,
-                      )
+                      ),
                     ),
                     const SizedBox(height: 12),
                     Container(
@@ -170,98 +197,154 @@ class _MakeSaleScreenState extends State<MakeSaleScreen> {
                       decoration: BoxDecoration(
                         color: Theme.of(context).cardTheme.color,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: isDark ? Colors.white10 : Colors.grey.shade200),
+                        border: Border.all(
+                          color: isDark ? Colors.white10 : Colors.grey.shade200,
+                        ),
                       ),
                       child: Column(
                         children: [
-                          _InfoRow(label: l10n.name, value: '${_customer?['firstName'] ?? '...'} ${_customer?['lastName'] ?? ''}'),
-                          Divider(height: 24, color: isDark ? Colors.white10 : Colors.grey.shade100),
-                          _InfoRow(label: l10n.faydaId, value: widget.faydaId),
-                          Divider(height: 24, color: isDark ? Colors.white10 : Colors.grey.shade100),
-                          _InfoRow(label: l10n.woreda, value: _customer?['woreda']?['name'] ?? '...'),
+                          _InfoRow(
+                            label: l10n.name,
+                            value:
+                                '${_customer?['firstName'] ?? '...'} ${_customer?['lastName'] ?? ''}',
+                          ),
+                          Divider(
+                            height: 24,
+                            color: isDark
+                                ? Colors.white10
+                                : Colors.grey.shade100,
+                          ),
+
+                          _InfoRow(
+                            label: l10n.woreda,
+                            value: _customer?['woreda']?['name'] ?? '...',
+                          ),
                         ],
                       ),
                     ),
 
                     const SizedBox(height: 32),
                     Text(
-                      l10n.transactionDetails, 
+                      l10n.transactionDetails,
                       style: TextStyle(
-                        fontWeight: FontWeight.bold, 
+                        fontWeight: FontWeight.bold,
                         fontSize: 16,
                         color: Theme.of(context).colorScheme.onSurface,
-                      )
+                      ),
                     ),
                     const SizedBox(height: 16),
 
                     // Commodity Selection
                     Text(
-                      l10n.commodity, 
+                      l10n.commodity,
                       style: TextStyle(
-                        fontSize: 14, 
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
-                      )
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.8),
+                      ),
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
                       value: _selectedCommodityId,
-                      hint: Text(l10n.selectCommodity, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4))),
+                      hint: Text(
+                        l10n.selectCommodity,
+                        style: TextStyle(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withOpacity(0.4),
+                        ),
+                      ),
                       dropdownColor: Theme.of(context).cardTheme.color,
-                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
+                        fillColor: isDark
+                            ? Colors.white.withOpacity(0.05)
+                            : Colors.grey.shade50,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12), 
-                          borderSide: BorderSide(color: isDark ? Colors.white10 : Colors.grey.shade200),
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: isDark
+                                ? Colors.white10
+                                : Colors.grey.shade200,
+                          ),
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12), 
-                          borderSide: BorderSide(color: isDark ? Colors.white10 : Colors.grey.shade200),
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: isDark
+                                ? Colors.white10
+                                : Colors.grey.shade200,
+                          ),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                        ),
                       ),
-                      items: _availableCommodities.map<DropdownMenuItem<String>>((c) {
+                      items: _availableCommodities.map<DropdownMenuItem<String>>((
+                        c,
+                      ) {
                         return DropdownMenuItem<String>(
                           value: c['commodity']['_id'],
-                          child: Text('${c['commodity']['name']} (${c['quantity']} available)'),
+                          child: Text(
+                            '${c['commodity']['name']} (${c['quantity']} available)',
+                          ),
                         );
                       }).toList(),
-                      onChanged: (val) => setState(() => _selectedCommodityId = val),
+                      onChanged: (val) =>
+                          setState(() => _selectedCommodityId = val),
                     ),
 
                     const SizedBox(height: 24),
 
                     // Quantity
                     Text(
-                      '${l10n.quantity} ${unit.isNotEmpty ? "($unit)" : ""}', 
+                      '${l10n.quantity} ${unit.isNotEmpty ? "($unit)" : ""}',
                       style: TextStyle(
-                        fontSize: 14, 
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
-                      )
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.8),
+                      ),
                     ),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _quantityController,
                       keyboardType: TextInputType.number,
-                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                       decoration: InputDecoration(
                         filled: true,
-                        fillColor: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
+                        fillColor: isDark
+                            ? Colors.white.withOpacity(0.05)
+                            : Colors.grey.shade50,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12), 
-                          borderSide: BorderSide(color: isDark ? Colors.white10 : Colors.grey.shade200),
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: isDark
+                                ? Colors.white10
+                                : Colors.grey.shade200,
+                          ),
                         ),
                         enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12), 
-                          borderSide: BorderSide(color: isDark ? Colors.white10 : Colors.grey.shade200),
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: isDark
+                                ? Colors.white10
+                                : Colors.grey.shade200,
+                          ),
                         ),
                       ),
                       validator: (val) {
                         if (val == null || val.isEmpty) return 'Enter quantity';
-                        if (double.tryParse(val) == null) return 'Enter a valid number';
+                        if (double.tryParse(val) == null)
+                          return 'Enter a valid number';
                         return null;
                       },
                     ),
@@ -271,17 +354,31 @@ class _MakeSaleScreenState extends State<MakeSaleScreen> {
                       width: double.infinity,
                       height: 56,
                       child: ElevatedButton(
-                        onPressed: _isSubmitting || _customer == null ? null : _submitSale,
+                        onPressed: _isSubmitting || _customer == null
+                            ? null
+                            : _submitSale,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Theme.of(context).primaryColor,
                           foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                           elevation: 0,
-                          disabledBackgroundColor: Theme.of(context).primaryColor.withOpacity(0.5),
+                          disabledBackgroundColor: Theme.of(
+                            context,
+                          ).primaryColor.withOpacity(0.5),
                         ),
                         child: _isSubmitting
-                            ? const CircularProgressIndicator(color: Colors.white)
-                            : Text(l10n.completeSale, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                            : Text(
+                                l10n.completeSale,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                       ),
                     ),
                   ],
@@ -303,8 +400,21 @@ class _InfoRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: TextStyle(color: isDark ? Colors.white60 : Colors.grey.shade600, fontSize: 13)),
-        Text(value, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Theme.of(context).colorScheme.onSurface)),
+        Text(
+          label,
+          style: TextStyle(
+            color: isDark ? Colors.white60 : Colors.grey.shade600,
+            fontSize: 13,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
       ],
     );
   }

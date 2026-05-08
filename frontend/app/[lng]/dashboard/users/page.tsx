@@ -44,6 +44,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../../components/ui/select";
+import { AlertCircle } from "lucide-react";
 
 export default function UsersPage() {
   const { t } = useT("common");
@@ -59,6 +60,8 @@ export default function UsersPage() {
   
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
+
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Form states
   const [formData, setFormData] = useState({
@@ -88,6 +91,10 @@ export default function UsersPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       setIsCreateOpen(false);
+      setSubmitError(null);
+    },
+    onError: (err: any) => {
+      setSubmitError(err?.response?.data?.message ?? t("common.errorUpdating"));
     },
   });
 
@@ -96,6 +103,10 @@ export default function UsersPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       setIsEditOpen(false);
+      setSubmitError(null);
+    },
+    onError: (err: any) => {
+      setSubmitError(err?.response?.data?.message ?? t("common.errorUpdating"));
     },
   });
 
@@ -104,6 +115,10 @@ export default function UsersPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       setIsDeleteOpen(false);
+      setSubmitError(null);
+    },
+    onError: (err: any) => {
+      setSubmitError(err?.response?.data?.message ?? t("common.errorUpdating"));
     },
   });
 
@@ -111,11 +126,16 @@ export default function UsersPage() {
     mutationFn: (data: { id: string; newPassword: string }) => adminResetUserPassword(data.id, data.newPassword),
     onSuccess: () => {
       setIsResetOpen(false);
+      setSubmitError(null);
+    },
+    onError: (err: any) => {
+      setSubmitError(err?.response?.data?.message ?? t("common.errorUpdating"));
     },
   });
 
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError(null);
     const payload = { ...formData };
     if (payload.role === "admin" || !payload.worksAt) {
       delete (payload as any).worksAt;
@@ -126,6 +146,7 @@ export default function UsersPage() {
   const handleEditSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedUser) return;
+    setSubmitError(null);
     const payload = { ...formData };
     delete (payload as any).password; // dont update password here
     if (payload.role === "admin" || !payload.worksAt) {
@@ -137,11 +158,13 @@ export default function UsersPage() {
   const handleResetSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedUser) return;
+    setSubmitError(null);
     resetPasswordMutation.mutate({ id: selectedUser._id, newPassword });
   };
 
   const handleDeleteConfirm = () => {
     if (!selectedUser) return;
+    setSubmitError(null);
     deleteMutation.mutate(selectedUser._id);
   };
 
@@ -156,6 +179,7 @@ export default function UsersPage() {
       worksAt: "",
       password: "",
     });
+    setSubmitError(null);
     setIsCreateOpen(true);
   };
 
@@ -171,6 +195,7 @@ export default function UsersPage() {
       worksAt: (typeof user.worksAt === 'object' && user.worksAt !== null) ? (user.worksAt._id || user.worksAt.id) : (user.worksAt || ""),
       password: "",
     });
+    setSubmitError(null);
     setIsEditOpen(true);
   };
 
@@ -331,6 +356,12 @@ export default function UsersPage() {
             <DialogTitle>{t("users.createUser")}</DialogTitle>
             <DialogDescription>{t("users.managementSubtitle")}</DialogDescription>
           </DialogHeader>
+          {submitError && (
+            <div className="flex items-center gap-2 rounded-md bg-red-50 border border-red-200 p-3 text-red-600 dark:bg-red-900/20 dark:border-red-900/50 dark:text-red-400">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              <span className="text-sm font-medium">{submitError}</span>
+            </div>
+          )}
           <form onSubmit={handleCreateSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -407,6 +438,12 @@ export default function UsersPage() {
             <DialogTitle>{t("users.editUser")}</DialogTitle>
             <DialogDescription>{t("users.managementSubtitle")}</DialogDescription>
           </DialogHeader>
+          {submitError && (
+            <div className="flex items-center gap-2 rounded-md bg-red-50 border border-red-200 p-3 text-red-600 dark:bg-red-900/20 dark:border-red-900/50 dark:text-red-400">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              <span className="text-sm font-medium">{submitError}</span>
+            </div>
+          )}
           <form onSubmit={handleEditSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -479,6 +516,12 @@ export default function UsersPage() {
             <DialogTitle>{t("users.resetPassword")}</DialogTitle>
             <DialogDescription>{t("users.resetPasswordDescription", { username: selectedUser?.username })}</DialogDescription>
           </DialogHeader>
+          {submitError && (
+            <div className="flex items-center gap-2 rounded-md bg-red-50 border border-red-200 p-3 text-red-600 dark:bg-red-900/20 dark:border-red-900/50 dark:text-red-400 mb-4">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              <span className="text-sm font-medium">{submitError}</span>
+            </div>
+          )}
           <form onSubmit={handleResetSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="new-password">{t("common.password")}</Label>
@@ -501,6 +544,12 @@ export default function UsersPage() {
               {t("users.deleteConfirm", { username: selectedUser?.username })}
             </DialogDescription>
           </DialogHeader>
+          {submitError && (
+            <div className="flex items-center gap-2 rounded-md bg-red-50 border border-red-200 p-3 text-red-600 dark:bg-red-900/20 dark:border-red-900/50 dark:text-red-400 mt-4">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              <span className="text-sm font-medium">{submitError}</span>
+            </div>
+          )}
           <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>{t("common.cancel")}</Button>
             <Button variant="destructive" onClick={handleDeleteConfirm} disabled={deleteMutation.isPending}>
