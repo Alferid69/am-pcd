@@ -19,6 +19,9 @@ const notoSansEthiopic = Noto_Sans_Ethiopic({
   subsets: ["ethiopic"],
 });
 
+// Initialize server i18next once at module scope
+initServerI18next(i18nConfig);
+
 export const metadata: Metadata = {
   title: "Arba Minch Public Commodity Distribution",
   description: "Arba Minch Public Commodity Distribution",
@@ -32,9 +35,6 @@ export default async function RootLayout({
   params: Promise<{ lng: string }>;
 }>) {
   const { lng = "en" } = await params;
-
-  // Initialize server i18next first
-  await initServerI18next(i18nConfig);
 
   // Fetch translation instance and extract resources
   const { i18n } = await getT("common", { lng });

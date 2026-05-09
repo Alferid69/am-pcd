@@ -44,13 +44,20 @@ export default function DashboardLayout({
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [notificationCount] = useState(3);
-  const { userRole, userName, isLoading } = useAuth();
+  const { userRole, userName, isLoading, isAuthenticated } = useAuth();
 
   const mounted = useSyncExternalStore(
     () => () => {},
     () => true,
     () => false,
   );
+
+  useEffect(() => {
+    if (mounted && !isLoading && !isAuthenticated) {
+      const currentLng = pathname.split("/")[1] || "en";
+      router.replace(`/${currentLng}/login`);
+    }
+  }, [mounted, isLoading, isAuthenticated, pathname, router]);
 
   const navItems = useMemo(
     () => roleNavMap[userRole] ?? baseNavItems,
