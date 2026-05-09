@@ -29,7 +29,7 @@ interface AuthContextType extends AuthState {
 }
 
 const defaultState: AuthState = {
-  userRole: "admin",
+  userRole: "retailer",
   userName: "",
   worksAt: null,
   isAuthenticated: false,
@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await apiClient.get("/users/me");
       const user = response.data.data;
-      const role = isRoleKey(user.role) ? user.role : "admin";
+      const role = isRoleKey(user.role) ? user.role : "retailer";
       
       let worksAt = null;
       if (user.worksAt) {
@@ -80,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback((data: any) => {
     const user = data.data.user;
-    const role = isRoleKey(user.role) ? user.role : "admin";
+    const role = isRoleKey(user.role) ? user.role : "retailer";
     
     let worksAt = null;
     if (user.worksAt) {
@@ -103,11 +103,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (e) {
       console.error("Logout failed", e);
     } finally {
+      const currentLng = window.location.pathname.split("/")[1] || "en";
       setState({
         ...defaultState,
         isLoading: false,
       });
-      window.location.href = "/login";
+      window.location.href = `/${currentLng}/login`;
     }
   }, []);
 

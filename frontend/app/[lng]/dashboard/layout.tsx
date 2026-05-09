@@ -121,6 +121,11 @@ export default function DashboardLayout({
     );
   }
 
+  // Prevent rendering if not authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-(--bpds-surface) text-(--bpds-on-surface)">
       <div className="mx-auto flex min-h-screen w-full max-w-360">
