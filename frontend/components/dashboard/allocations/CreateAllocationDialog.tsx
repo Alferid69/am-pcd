@@ -64,8 +64,7 @@ export default function CreateAllocationDialog() {
     },
     onError: (err: any) => {
       setSubmitError(
-        err?.response?.data?.message ??
-          t("allocations.errorFailed"),
+        err?.response?.data?.message ?? t("allocations.errorFailed"),
       );
     },
   });
@@ -143,7 +142,8 @@ export default function CreateAllocationDialog() {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Package className="w-5 h-5 text-(--bpds-primary)" /> {t("allocations.dispatch")}
+            <Package className="w-5 h-5 text-(--bpds-primary)" />{" "}
+            {t("allocations.dispatch")}
           </DialogTitle>
           <DialogDescription>
             {t("allocations.createDescription")}
@@ -161,7 +161,9 @@ export default function CreateAllocationDialog() {
               <SelectTrigger>
                 <SelectValue
                   placeholder={
-                    isLoadingRequests ? t("common.loading") : t("allocations.selectRequest")
+                    isLoadingRequests
+                      ? t("common.loading")
+                      : t("allocations.selectRequest")
                   }
                 >
                   {selectedRequest && (

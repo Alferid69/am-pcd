@@ -110,10 +110,11 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 // ─── Stat Card ────────────────────────────────────────────────────────────────
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function StatCard({ card }: { card: any }) {
   const { t } = useT("common");
   const colors = colorMap[card.color] ?? colorMap.blue;
-  
+
   return (
     <Card className="bg-(--bpds-surface) border-(--bpds-outline-variant) hover:shadow-md transition-all">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -150,6 +151,7 @@ export default function OverviewPage() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["overview-stats", userRole],
     queryFn: fetchOverviewStats,
+    refetchInterval: 10000, // Real-time updates every 10 seconds
   });
 
   const greeting = (() => {
@@ -189,6 +191,7 @@ export default function OverviewPage() {
         <>
           {/* Stat Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {data.statCards.map((card: any) => (
               <StatCard key={card.id} card={card} />
             ))}
@@ -210,6 +213,7 @@ export default function OverviewPage() {
                   </div>
                 ) : (
                   <ul className="divide-y divide-(--bpds-outline-variant)">
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {data.recentActivity.map((item: any) => (
                       <li
                         key={item.id}
@@ -244,6 +248,7 @@ export default function OverviewPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 {data.quickActions.map((action: any) => (
                   <Button
                     key={action.key}

@@ -31,7 +31,7 @@ class AuthProvider with ChangeNotifier {
 
     final token = prefs.getString('jwt');
     final userData = prefs.getString('user');
-    
+
     if (userData != null) {
       final user = jsonDecode(userData);
       if (user['role'] == 'retailer') {
@@ -78,7 +78,7 @@ class AuthProvider with ChangeNotifier {
       _isLoading = false;
       notifyListeners();
       rethrow;
-    } on Exception catch (e) {
+    } on Exception {
       _isLoading = false;
       notifyListeners();
       rethrow;

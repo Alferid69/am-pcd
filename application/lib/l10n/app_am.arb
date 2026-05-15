@@ -52,6 +52,8 @@
   "noStockRequestsFound": "ምንም የክምችት ጥያቄዎች አልተገኙም",
   "noSalesRecordsFound": "ምንም የሽያጭ መዝገቦች አልተገኙም",
   "makeSale": "ሽያጭ ያከናውኑ",
+  "maxAllowedPerCustomer": "ለአንድ ደንበኛ የሚፈቀደው ከፍተኛ መጠን፦ {amount} {unit}",
+  "exceedsQuota": "ብዛቱ ለደንበኛ ከተፈቀደው መጠን በላይ ነው ({max} {unit})",
   "centerFaydaQR": "የፋይዳ መለያ QR በሳጥኑ ውስጥ ያድርጉ",
   "onlyRetailerAccess": "ይህ መተግበሪያ ለቸርቻሪዎች ብቻ የተፈቀደ ነው።",
   "exitApp": "መተግበሪያውን ዝጋ"

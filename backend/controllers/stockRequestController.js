@@ -12,7 +12,7 @@ const popOptions = [
   },
   {
     path: "requestedItems.commodity",
-    select: "name baseUnit bulkUnit conversionRate",
+    select: "name baseUnit bulkUnit conversionRate maxAmountPerCustomer",
   },
 ];
 

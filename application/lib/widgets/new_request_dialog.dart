@@ -37,15 +37,16 @@ class _NewRequestDialogState extends State<NewRequestDialog> {
   }
 
   Future<void> submit() async {
-    final l10n = AppLocalizations.of(context)!;
     setState(() {
       isSubmitting = true;
       errorMsg = null;
     });
 
     final validItems = newItems
-        .where((i) =>
-            i['commodity'] != null && i['quantity'] > 0 && i['unit'] != null)
+        .where(
+          (i) =>
+              i['commodity'] != null && i['quantity'] > 0 && i['unit'] != null,
+        )
         .toList();
 
     if (validItems.isEmpty) {
@@ -59,12 +60,14 @@ class _NewRequestDialogState extends State<NewRequestDialog> {
     try {
       final payload = {
         'requestedItems': validItems
-            .map((i) => {
-                  'commodity': i['commodity'],
-                  'quantity': i['quantity'],
-                  'unit': i['unit'],
-                })
-            .toList()
+            .map(
+              (i) => {
+                'commodity': i['commodity'],
+                'quantity': i['quantity'],
+                'unit': i['unit'],
+              },
+            )
+            .toList(),
       };
 
       final response = await ApiService.createStockRequest(payload);
@@ -108,12 +111,13 @@ class _NewRequestDialogState extends State<NewRequestDialog> {
               final item = entry.value;
               final selectedCommodityId = item['commodity'] as String?;
               final selectedCommodity = widget.commodities.firstWhere(
-                  (c) => c['_id'] == selectedCommodityId,
-                  orElse: () => null);
+                (c) => c['_id'] == selectedCommodityId,
+                orElse: () => null,
+              );
               final unitOptions = selectedCommodity != null
                   ? [
                       selectedCommodity['baseUnit'],
-                      selectedCommodity['bulkUnit']
+                      selectedCommodity['bulkUnit'],
                     ]
                   : [];
               return Column(
@@ -128,30 +132,36 @@ class _NewRequestDialogState extends State<NewRequestDialog> {
                               hint: Text(l10n.selectCommodity),
                               items: widget.commodities
                                   .map<DropdownMenuItem<String>>((c) {
-                                final id = c['_id'] as String;
-                                final disabled = widget.blockedIds.contains(id) &&
-                                    id != selectedCommodityId;
-                                return DropdownMenuItem<String>(
-                                  value: id,
-                                  enabled: !disabled,
-                                  child: Text(
-                                    c['name'] + (disabled ? ' (Pending)' : ''),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                );
-                              }).toList(),
+                                    final id = c['_id'] as String;
+                                    final disabled =
+                                        widget.blockedIds.contains(id) &&
+                                        id != selectedCommodityId;
+                                    return DropdownMenuItem<String>(
+                                      value: id,
+                                      enabled: !disabled,
+                                      child: Text(
+                                        c['name'] +
+                                            (disabled ? ' (Pending)' : ''),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    );
+                                  })
+                                  .toList(),
                               onChanged: (val) {
                                 setState(() {
                                   item['commodity'] = val;
-                                  item['unit'] = null; // reset unit when commodity changes
+                                  item['unit'] =
+                                      null; // reset unit when commodity changes
                                 });
                               },
                             ),
                           ),
                           if (newItems.length > 1)
                             IconButton(
-                              icon: const Icon(Icons.remove_circle,
-                                  color: Colors.red),
+                              icon: const Icon(
+                                Icons.remove_circle,
+                                color: Colors.red,
+                              ),
                               onPressed: () => removeItem(idx),
                             ),
                         ],
@@ -165,8 +175,9 @@ class _NewRequestDialogState extends State<NewRequestDialog> {
                               initialValue: item['quantity'].toString(),
                               decoration: InputDecoration(
                                 labelText: l10n.quantity,
-                                contentPadding:
-                                    const EdgeInsets.symmetric(horizontal: 4),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
                               ),
                               keyboardType: TextInputType.number,
                               onChanged: (v) {
@@ -181,10 +192,13 @@ class _NewRequestDialogState extends State<NewRequestDialog> {
                             child: DropdownButtonFormField<String>(
                               value: item['unit'] as String?,
                               hint: const Text('Unit'),
-                              items: unitOptions
-                                  .map<DropdownMenuItem<String>>((u) {
+                              items: unitOptions.map<DropdownMenuItem<String>>((
+                                u,
+                              ) {
                                 return DropdownMenuItem<String>(
-                                    value: u, child: Text(u));
+                                  value: u,
+                                  child: Text(u),
+                                );
                               }).toList(),
                               onChanged: selectedCommodityId == null
                                   ? null
@@ -214,14 +228,19 @@ class _NewRequestDialogState extends State<NewRequestDialog> {
             if (errorMsg != null)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text(errorMsg!, style: const TextStyle(color: Colors.red)),
+                child: Text(
+                  errorMsg!,
+                  style: const TextStyle(color: Colors.red),
+                ),
               ),
           ],
         ),
       ),
       actions: [
         TextButton(
-          onPressed: isSubmitting ? null : () => Navigator.of(context).pop(false),
+          onPressed: isSubmitting
+              ? null
+              : () => Navigator.of(context).pop(false),
           child: Text(l10n.cancel),
         ),
         ElevatedButton(
@@ -231,7 +250,10 @@ class _NewRequestDialogState extends State<NewRequestDialog> {
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
-                      strokeWidth: 2, color: Colors.white))
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
               : Text(l10n.submit),
         ),
       ],

@@ -165,6 +165,16 @@ class AppLocalizationsAm extends AppLocalizations {
   String get makeSale => 'ሽያጭ ያከናውኑ';
 
   @override
+  String maxAllowedPerCustomer(Object amount, Object unit) {
+    return 'ለአንድ ደንበኛ የሚፈቀደው ከፍተኛ መጠን፦ $amount $unit';
+  }
+
+  @override
+  String exceedsQuota(Object max, Object unit) {
+    return 'ብዛቱ ለደንበኛ ከተፈቀደው መጠን በላይ ነው ($max $unit)';
+  }
+
+  @override
   String get centerFaydaQR => 'የፋይዳ መለያ QR በሳጥኑ ውስጥ ያድርጉ';
 
   @override

@@ -12,7 +12,7 @@ const popOptions = [
     select: "name woredaOffice",
     populate: { path: "woredaOffice", select: "name" },
   },
-  { path: "allocatedItems.commodity", select: "name baseUnit bulkUnit" },
+  { path: "allocatedItems.commodity", select: "name baseUnit bulkUnit maxAmountPerCustomer" },
 ];
 
 exports.createAllocation = catchAsync(async (req, res, next) => {

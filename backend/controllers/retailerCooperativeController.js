@@ -8,7 +8,7 @@ const catchAsync = require("../utils/catchAsync");
 const retailerCooperativePopOptions = [
   {
     path: "availableCommodity.commodity", // Populating a nested path
-    select: "name price baseUnit bulkUnit",
+    select: "name price baseUnit bulkUnit maxAmountPerCustomer",
   },
   {
     path: "woredaOffice",

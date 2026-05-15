@@ -54,6 +54,7 @@ export default function CommoditiesPage() {
     baseUnit: "",
     bulkUnit: "",
     conversionRate: 1,
+    maxAmountPerCustomer: 5,
   });
 
   const { data: commodities = [], isLoading } = useQuery({
@@ -132,6 +133,7 @@ export default function CommoditiesPage() {
       baseUnit: "",
       bulkUnit: "",
       conversionRate: 1,
+      maxAmountPerCustomer: 5,
     });
     setSelectedCommodity(null);
   };
@@ -162,6 +164,7 @@ export default function CommoditiesPage() {
       baseUnit: commodity.baseUnit,
       bulkUnit: commodity.bulkUnit,
       conversionRate: commodity.conversionRate,
+      maxAmountPerCustomer: commodity.maxAmountPerCustomer,
     });
     setIsEditOpen(true);
   };
@@ -251,20 +254,38 @@ export default function CommoditiesPage() {
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label>{t("commoditiesManagement.conversionRate")}</Label>
-                <Input
-                  type="number"
-                  min="1"
-                  required
-                  value={formData.conversionRate}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      conversionRate: parseFloat(e.target.value),
-                    })
-                  }
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>{t("commoditiesManagement.conversionRate")}</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    required
+                    value={formData.conversionRate}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        conversionRate: parseFloat(e.target.value),
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>{t("commoditiesManagement.maxAmountPerCustomer")}</Label>
+                  <Input
+                    type="number"
+                    min="0.1"
+                    step="0.1"
+                    required
+                    value={formData.maxAmountPerCustomer}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        maxAmountPerCustomer: parseFloat(e.target.value),
+                      })
+                    }
+                  />
+                </div>
               </div>
               <div className="flex justify-end gap-2 pt-4">
                 <Button
@@ -311,6 +332,9 @@ export default function CommoditiesPage() {
                 <TableHead>
                   {t("commoditiesManagement.conversionRate")}
                 </TableHead>
+                <TableHead>
+                  {t("commoditiesManagement.maxAmountPerCustomer")}
+                </TableHead>
                 <TableHead className="text-right">
                   {t("commoditiesManagement.actions")}
                 </TableHead>
@@ -320,7 +344,7 @@ export default function CommoditiesPage() {
               {isLoading ? (
                 <TableRow>
                   <TableCell
-                    colSpan={6}
+                    colSpan={7}
                     className="text-center py-10 text-muted-foreground"
                   >
                     {t("commoditiesManagement.loading")}
@@ -329,7 +353,7 @@ export default function CommoditiesPage() {
               ) : filteredCommodities.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={6}
+                    colSpan={7}
                     className="text-center py-10 text-muted-foreground"
                   >
                     {t("commoditiesManagement.noCommodities")}
@@ -345,6 +369,9 @@ export default function CommoditiesPage() {
                     <TableCell>{commodity.baseUnit}</TableCell>
                     <TableCell>{commodity.bulkUnit}</TableCell>
                     <TableCell>{commodity.conversionRate}</TableCell>
+                    <TableCell>
+                      {commodity.maxAmountPerCustomer} {commodity.baseUnit}
+                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button
@@ -425,20 +452,38 @@ export default function CommoditiesPage() {
                 />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>{t("commoditiesManagement.conversionRate")}</Label>
-              <Input
-                type="number"
-                min="1"
-                required
-                value={formData.conversionRate}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    conversionRate: parseFloat(e.target.value),
-                  })
-                }
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>{t("commoditiesManagement.conversionRate")}</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  required
+                  value={formData.conversionRate}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      conversionRate: parseFloat(e.target.value),
+                    })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>{t("commoditiesManagement.maxAmountPerCustomer")}</Label>
+                <Input
+                  type="number"
+                  min="0.1"
+                  step="0.1"
+                  required
+                  value={formData.maxAmountPerCustomer}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      maxAmountPerCustomer: parseFloat(e.target.value),
+                    })
+                  }
+                />
+              </div>
             </div>
             <div className="flex justify-end gap-2 pt-4">
               <Button

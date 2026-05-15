@@ -7,6 +7,7 @@ export interface Commodity {
   baseUnit: string;
   bulkUnit: string;
   conversionRate: number;
+  maxAmountPerCustomer: number;
   description?: string;
 }
 

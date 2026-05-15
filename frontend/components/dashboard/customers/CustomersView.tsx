@@ -114,7 +114,7 @@ export default function CustomersView() {
           </p>
         </div>
 
-        {canManageCustomer && (
+        {userRole === "woreda" && (
           <div className="flex-shrink-0">
             <CreateCustomerDialog />
           </div>

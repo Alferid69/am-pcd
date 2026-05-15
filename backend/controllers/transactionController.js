@@ -1,6 +1,7 @@
 const Transaction = require("../models/Transaction");
 const Customer = require("../models/Customer");
 const RetailerCooperative = require("../models/RetailerCooperative");
+const Commodity = require("../models/Commodity");
 const factory = require("./handlerFactory");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
@@ -56,7 +57,18 @@ exports.createTransaction = catchAsync(async (req, res, next) => {
   }
 
   if (availableCommodity.quantity < amount) {
-    return next(new AppError("ይህ እቃ አልቋል።", 400));
+    return next(new AppError("ይህ እቃ አልቋል ወይም በቂ የለም።", 400));
+  }
+
+  // ENFORCE: Customer quota
+  const commodityDoc = await Commodity.findById(commodity);
+  if (commodityDoc && amount > commodityDoc.maxAmountPerCustomer) {
+    return next(
+      new AppError(
+        `ደንበኛው ከ ${commodityDoc.maxAmountPerCustomer} ${commodityDoc.baseUnit} በላይ መግዛት አይችልም።`,
+        400,
+      ),
+    );
   }
 
   // Proceed with transaction
@@ -110,7 +122,7 @@ exports.generateCommodityReports = catchAsync(async (req, res, next) => {
 });
 
 const transactionPopOptions = [
-  { path: "commodity", select: "name price baseUnit bulkUnit" },
+  { path: "commodity", select: "name price baseUnit bulkUnit maxAmountPerCustomer" },
   { path: "user", select: "username firstName lastName" },
   { path: "retailer", select: "name woredaOffice" },
   { path: "customer", select: "firstName lastName phone fayda" },

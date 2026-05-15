@@ -52,6 +52,8 @@
   "noStockRequestsFound": "No stock requests found",
   "noSalesRecordsFound": "No sales records found",
   "makeSale": "Make Sale",
+  "maxAllowedPerCustomer": "Max allowed: {amount} {unit}",
+  "exceedsQuota": "Quantity exceeds customer quota ({max} {unit})",
   "centerFaydaQR": "Center the Fayda ID QR in the box",
   "onlyRetailerAccess": "This application is restricted to retailer accounts only.",
   "exitApp": "Exit Application"

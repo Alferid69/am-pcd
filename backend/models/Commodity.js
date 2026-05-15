@@ -31,6 +31,12 @@ const commoditySchema = new mongoose.Schema(
       required: [true, 'Conversion Rate is required (e.g., 100 for 100kg per kuntal)'],
       min: [1, 'Conversion Rate must be at least 1'],
     },
+    maxAmountPerCustomer: {
+      type: Number,
+      required: [true, 'Max amount per customer is required'],
+      min: [0.1, 'Max amount must be at least 0.1'],
+      default: 5,
+    },
   },
   {
     timestamps: true,

@@ -410,6 +410,18 @@ abstract class AppLocalizations {
   /// **'Make Sale'**
   String get makeSale;
 
+  /// No description provided for @maxAllowedPerCustomer.
+  ///
+  /// In en, this message translates to:
+  /// **'Max allowed: {amount} {unit}'**
+  String maxAllowedPerCustomer(Object amount, Object unit);
+
+  /// No description provided for @exceedsQuota.
+  ///
+  /// In en, this message translates to:
+  /// **'Quantity exceeds customer quota ({max} {unit})'**
+  String exceedsQuota(Object max, Object unit);
+
   /// No description provided for @centerFaydaQR.
   ///
   /// In en, this message translates to:

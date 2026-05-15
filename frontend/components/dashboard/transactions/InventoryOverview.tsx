@@ -14,6 +14,7 @@ export default function InventoryOverview({ retailerId }: { retailerId: string }
     queryKey: ["retailer", retailerId],
     queryFn: () => fetchRetailerById(retailerId),
     enabled: !!retailerId,
+    refetchInterval: 5000, // Real-time updates every 5 seconds
   });
 
   if (isLoading) {

@@ -288,33 +288,66 @@ class _MakeSaleScreenState extends State<MakeSaleScreen> {
                       items: _availableCommodities.map<DropdownMenuItem<String>>((
                         c,
                       ) {
+                        final commodity = c['commodity'];
                         return DropdownMenuItem<String>(
-                          value: c['commodity']['_id'],
+                          value: commodity?['_id'],
                           child: Text(
-                            '${c['commodity']['name']} (${c['quantity']} available)',
+                            '${commodity?['name'] ?? 'Unknown'} (${c['quantity'] ?? 0} available)',
                           ),
                         );
                       }).toList(),
-                      onChanged: (val) =>
-                          setState(() => _selectedCommodityId = val),
+                      onChanged: (val) {
+                        setState(() {
+                          _selectedCommodityId = val;
+                          final selected = _availableCommodities.find(
+                            (c) => c['commodity']['_id'] == val,
+                          );
+                          final max =
+                              selected?['commodity']?['maxAmountPerCustomer'];
+                          if (max != null) {
+                            _quantityController.text = max.toString();
+                          }
+                        });
+                      },
                     ),
 
                     const SizedBox(height: 24),
 
                     // Quantity
-                    Text(
-                      '${l10n.quantity} ${unit.isNotEmpty ? "($unit)" : ""}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withOpacity(0.8),
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${l10n.quantity} ${unit.isNotEmpty ? "($unit)" : ""}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withOpacity(0.8),
+                          ),
+                        ),
+                        if (selectedCommodity != null &&
+                            selectedCommodity['commodity']?['maxAmountPerCustomer'] !=
+                                null)
+                          Text(
+                            l10n.maxAllowedPerCustomer(
+                              selectedCommodity['commodity']['maxAmountPerCustomer']
+                                  .toString(),
+                              unit,
+                            ),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context).primaryColor,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                      ],
                     ),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _quantityController,
+                      readOnly: true,
                       keyboardType: TextInputType.number,
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurface,
@@ -343,8 +376,18 @@ class _MakeSaleScreenState extends State<MakeSaleScreen> {
                       ),
                       validator: (val) {
                         if (val == null || val.isEmpty) return 'Enter quantity';
-                        if (double.tryParse(val) == null)
-                          return 'Enter a valid number';
+                        final amount = double.tryParse(val);
+                        if (amount == null) return 'Enter a valid number';
+                        if (amount <= 0)
+                          return 'Quantity must be greater than 0';
+
+                        if (selectedCommodity != null) {
+                          final max =
+                              selectedCommodity['commodity']?['maxAmountPerCustomer'];
+                          if (max != null && amount > max) {
+                            return l10n.exceedsQuota(max.toString(), unit);
+                          }
+                        }
                         return null;
                       },
                     ),
@@ -422,10 +465,9 @@ class _InfoRow extends StatelessWidget {
 
 extension ListFind<T> on List<T> {
   T? find(bool Function(T) test) {
-    try {
-      return firstWhere(test);
-    } catch (e) {
-      return null;
+    for (var element in this) {
+      if (test(element)) return element;
     }
+    return null;
   }
 }

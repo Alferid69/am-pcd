@@ -165,6 +165,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get makeSale => 'Make Sale';
 
   @override
+  String maxAllowedPerCustomer(Object amount, Object unit) {
+    return 'Max allowed: $amount $unit';
+  }
+
+  @override
+  String exceedsQuota(Object max, Object unit) {
+    return 'Quantity exceeds customer quota ($max $unit)';
+  }
+
+  @override
   String get centerFaydaQR => 'Center the Fayda ID QR in the box';
 
   @override

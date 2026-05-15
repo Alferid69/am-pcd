@@ -6,8 +6,8 @@ class ApiService {
   // Use 10.0.2.2 for Android Emulator to access localhost
   // Change to your machine's IP if testing on physical device
   // static const String baseUrl = 'http://10.0.2.2:3000/api/v1';
-  // static const String baseUrl = 'http://10.144.37.112:3000/api/v1';
-  static const String baseUrl = 'https://5938-51-20-63-138.ngrok-free.app/api/v1';
+  // static const String baseUrl = 'http://10.144.37.219:3000/api/v1';
+  static const String baseUrl = 'https://d271-51-20-63-138.ngrok-free.app/api/v1';
   static Function()? onUnauthorized;
 
   static Future<String?> getToken() async {

@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
 import {
   Search,
   Filter,
@@ -48,6 +50,7 @@ export default function TransactionList({
     queryFn: () =>
       fetchRetailerTransactions(retailerId, appliedStartDate, appliedEndDate),
     enabled: !!retailerId,
+    refetchInterval: 5000, // Real-time updates every 5 seconds
   });
 
   const handleApplyDates = () => {
@@ -62,65 +65,139 @@ export default function TransactionList({
     setAppliedEndDate("");
   };
 
-  const handleExportCSV = () => {
+  const handleExportExcel = async () => {
     if (!filteredTransactions.length) return;
 
-    const headers = [
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = "AM-PCD System";
+    workbook.created = new Date();
+
+    const worksheet = workbook.addWorksheet("Transaction Report");
+
+    // --- Styling Setup ---
+    const headerFont = { bold: true, size: 14, color: { argb: "FFFFFFFF" } };
+    const headerFill: ExcelJS.Fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF4F46E5" }, // Indigo-600
+    };
+
+    // --- Report Header ---
+    worksheet.mergeCells("A1:F1");
+    const titleCell = worksheet.getCell("A1");
+    titleCell.value = "AM-PCD TRANSACTION REPORT";
+    titleCell.font = { bold: true, size: 18, color: { argb: "FF1E1B4B" } };
+    titleCell.alignment = { horizontal: "center" };
+
+    worksheet.addRow([t("common.date"), format(new Date(), "MMM d, yyyy h:mm a")]);
+    worksheet.addRow([
+      t("common.period"),
+      `${appliedStartDate || "All Time"} ${t("common.to")} ${
+        appliedEndDate || "Present"
+      }`,
+    ]);
+    
+    // Use the retailer name from the first transaction if possible
+    const retailerName = filteredTransactions[0]?.retailer?.name || retailerId;
+    worksheet.addRow([t("entities.retailerName"), retailerName]);
+    worksheet.addRow([]); // Spacer
+
+    // --- Table Headers ---
+    const tableHeaders = [
       t("common.customer"),
       t("dashboard.table.commodity"),
-      `${t("dashboard.table.quantity")} (${t("common.kg")})`,
-      t("transactions.unitPrice"),
-      t("transactions.totalPrice"),
+      `${t("dashboard.table.quantity")} (${
+        filteredTransactions[0]?.commodity?.baseUnit || t("common.unit")
+      })`,
+      t("transactions.unitPrice") + " (ETB)",
+      t("transactions.totalPrice") + " (ETB)",
       t("common.date"),
     ];
 
-    const escapeCSV = (val: any) => {
-      if (val === null || val === undefined) return "";
-      const stringVal = String(val);
-      if (
-        stringVal.includes(",") ||
-        stringVal.includes("\"") ||
-        stringVal.includes("\n") ||
-        stringVal.includes("\r")
-      ) {
-        return `"${stringVal.replace(/"/g, '""')}"`;
-      }
-      return stringVal;
-    };
+    const headerRow = worksheet.addRow(tableHeaders);
+    headerRow.eachCell((cell) => {
+      cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FF4F46E5" },
+      };
+      cell.alignment = { horizontal: "center", vertical: "middle" };
+    });
 
-    const rows = filteredTransactions.map((tx) => {
+    // --- Data Rows ---
+    filteredTransactions.forEach((tx) => {
       const customer =
         `${tx.customer?.firstName || ""} ${tx.customer?.lastName || ""}`.trim();
       const commodity = tx.commodity?.name || "";
       const qty = tx.amount || 0;
       const price = tx.commodity?.price || 0;
       const total = qty * price;
-      const date = tx.createdAt
-        ? ` ${format(new Date(tx.createdAt), "MMM d, yyyy h:mm a")}`
-        : "";
+      const date = tx.createdAt ? new Date(tx.createdAt) : "";
 
-      return [customer, commodity, qty, price, total, date]
-        .map(escapeCSV)
-        .join(",");
+      const row = worksheet.addRow([
+        customer,
+        commodity,
+        qty,
+        price,
+        total,
+        date,
+      ]);
+
+      // Format currency and numbers
+      row.getCell(4).numFmt = "#,##0.00";
+      row.getCell(5).numFmt = "#,##0.00";
+      if (date) {
+        row.getCell(6).numFmt = "mmm d, yyyy h:mm AM/PM";
+      }
     });
 
-    const csvContent = [headers.map(escapeCSV).join(","), ...rows].join("\n");
-    const BOM = "\uFEFF";
-    const blob = new Blob([BOM + csvContent], {
-      type: "text/csv;charset=utf-8;",
+    // --- Summary Section ---
+    worksheet.addRow([]); // Spacer
+    const summaryHeaderRow = worksheet.addRow(["REPORT SUMMARY"]);
+    summaryHeaderRow.getCell(1).font = { bold: true, size: 12 };
+
+    worksheet.addRow([t("transactions.totalTransactions"), totalTransactions]);
+    worksheet.addRow([t("transactions.totalRevenue"), `${totalRevenue.toFixed(2)} ETB`]);
+
+    worksheet.addRow([]); // Spacer
+    const breakdownHeaderRow = worksheet.addRow(["COMMODITY BREAKDOWN"]);
+    breakdownHeaderRow.getCell(1).font = { bold: true, size: 12 };
+
+    const breakdownSubHeader = [
+      t("dashboard.table.commodity"),
+      t("dashboard.table.quantity"),
+      "Revenue (ETB)",
+    ];
+    const bshRow = worksheet.addRow(breakdownSubHeader);
+    bshRow.eachCell((cell) => (cell.font = { bold: true }));
+
+    Object.entries(commodityVolumes).forEach(([name, data]) => {
+      worksheet.addRow([
+        name,
+        `${data.volume} ${data.unit}`,
+        `${data.revenue.toFixed(2)} ETB`,
+      ]);
     });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute(
-      "download",
-      `Transactions_${new Date().toISOString().split("T")[0]}.csv`,
+
+    // --- Dynamic Column Widths ---
+    worksheet.columns.forEach((column) => {
+      let maxColumnLength = 0;
+      column.eachCell!({ includeEmpty: true }, (cell) => {
+        const columnLength = cell.value ? cell.value.toString().length : 10;
+        if (columnLength > maxColumnLength) {
+          maxColumnLength = columnLength;
+        }
+      });
+      column.width = maxColumnLength < 12 ? 12 : maxColumnLength + 2;
+    });
+
+    // --- Export File ---
+    const buffer = await workbook.xlsx.writeBuffer();
+    saveAs(
+      new Blob([buffer]),
+      `Transaction_Report_${new Date().toISOString().split("T")[0]}.xlsx`,
     );
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
   };
 
   const filteredTransactions = transactions.filter((tx) => {
@@ -309,7 +386,7 @@ export default function TransactionList({
               )}
               <Button
                 variant="outline"
-                onClick={handleExportCSV}
+                onClick={handleExportExcel}
                 className="w-full sm:w-auto px-3"
                 disabled={filteredTransactions.length === 0}
               >

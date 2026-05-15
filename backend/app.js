@@ -3,6 +3,9 @@ const morgan = require("morgan");
 const helmet = require("helmet");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const hpp = require('hpp');
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
 
 const app = express();
 
@@ -31,6 +34,12 @@ app.use(cors({
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
+
+// Data sanitization against NoSQL query injections
+app.use(mongoSanitize());
+
+// Data sanitization against XSS
+app.use(xss());
 
 // Set security HTTP headers
 app.use(helmet());
