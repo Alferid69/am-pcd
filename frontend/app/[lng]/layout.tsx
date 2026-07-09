@@ -23,8 +23,19 @@ const notoSansEthiopic = Noto_Sans_Ethiopic({
 initServerI18next(i18nConfig);
 
 export const metadata: Metadata = {
-  title: "Arba Minch Public Commodity Distribution",
-  description: "Arba Minch Public Commodity Distribution",
+  title: {
+    template: "%s | Arba Minch Public Commodity Distribution",
+    default: "Arba Minch Public Commodity Distribution - Arbaminch PCD",
+  },
+  description: "Official portal for the Arba Minch (Arbaminch) Public Commodity Distribution. Managing resources and public distribution services in Arba Minch city.",
+  keywords: ["Arba Minch", "Arbaminch", "Public Commodity Distribution", "Ethiopia", "Arba Minch city", "Arbaminch PCD"],
+  openGraph: {
+    title: "Arba Minch Public Commodity Distribution",
+    description: "Official portal for Arba Minch (Arbaminch) Public Commodity Distribution services.",
+    siteName: "Arbaminch PCD",
+    locale: "en_US",
+    type: "website",
+  },
 };
 
 export default async function RootLayout({
