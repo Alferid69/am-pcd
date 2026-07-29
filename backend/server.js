@@ -5,6 +5,8 @@ dotenv.config("./.env");
 
 const app = require("./app");
 
+const HOST = '0.0.0.0';
+
 const uri = process.env.DATABASE_URL.replace(
   "<PASSWORD>",
   process.env.DATABASE_PASSWORD,
@@ -15,7 +17,7 @@ mongoose
   .then(() => {
     console.log("Mongoose connected");
 
-    app.listen(process.env.PORT, () => {
+    app.listen(process.env.PORT, HOST, () => {
       console.log(`Server is running on port ${process.env.PORT}`);
     });
   })
