@@ -70,8 +70,8 @@ const createSendToken = (user, statusCode, res) => {
 exports.login = catchAsync(async (req, res, next) => {
   const { username, password } = req.body;
 
-  if (!email || !password || typeof password !== 'string') {
-    return next(new AppError('Please provide a valid email and password string.', 400));
+  if (!username || !password || typeof password !== 'string') {
+    return next(new AppError('Please provide a valid username and password string.', 400));
 }
 
   if (!username || !password) {
