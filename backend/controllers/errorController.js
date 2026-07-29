@@ -6,14 +6,14 @@ const handleCastErrorDB = (err) => {
 };
 
 const handleDuplicateFieldsDB = (err) => {
-  const value = err.keyValue.username || err.keyValue.name;
-  const message = `Duplicate field value: '${value}' please use a different value.`;
+  const value = err.keyValue?.username || err.keyValue?.name || Object.values(err.keyValue)[0];
+  const message = `Duplicate field value: '${value}'. Please use a different value.`;
   return new AppError(message, 400);
 };
 
 const handleValidationErrorDB = (err) => {
   const errors = Object.values(err.errors).map((error) => error.message);
-  const message = `Invalid input date. ${errors.join(". ")}`;
+  const message = `Invalid input data. ${errors.join(". ")}`;
   return new AppError(message, 400);
 };
 
@@ -21,9 +21,10 @@ const handleJWTError = () =>
   new AppError("Invalid token! Please login again.", 401);
 
 const handleJWTExpiredError = () =>
-  new AppError("Your session has expired! Please login again", 401);
+  new AppError("Your session has expired! Please login again.", 401);
 
 const sendErrorDev = (err, req, res) => {
+  // API Response
   if (req.originalUrl.startsWith("/api")) {
     return res.status(err.statusCode).json({
       status: err.status,
@@ -33,24 +34,38 @@ const sendErrorDev = (err, req, res) => {
     });
   }
 
-  console.error("ERROR🔥: ", err);
+  // Non-API / Fallback Log & Response
+  console.error("ERROR 🔥: ", err);
+  return res.status(err.statusCode).json({
+    status: err.status,
+    message: err.message,
+  });
 };
 
 const sendErrorProd = (err, req, res) => {
   if (req.originalUrl.startsWith("/api")) {
+    // Operational, trusted error: send message & actual status code to client
     if (err.isOperational) {
-      return res.status(500).json({
+      return res.status(err.statusCode).json({
         status: err.status,
         message: err.message,
       });
     }
 
-    console.error("ERROR🔥: ", err);
-    res.status(500).json({
+    // Programming or other unknown error: don't leak error details
+    console.error("ERROR 🔥: ", err);
+    return res.status(500).json({
       status: "error",
       message: "Something went wrong!",
     });
   }
+
+  // Non-API Fallback Response
+  console.error("ERROR 🔥: ", err);
+  return res.status(500).json({
+    status: "error",
+    message: "Something went wrong!",
+  });
 };
 
 module.exports = (err, req, res, next) => {
@@ -60,12 +75,15 @@ module.exports = (err, req, res, next) => {
   if (process.env.NODE_ENV === "development") {
     sendErrorDev(err, req, res);
   } else if (process.env.NODE_ENV === "production") {
-    let error = { ...err };
-    console.log(error);
+    // Shallow copy + retain prototype/custom operational flag properties
+    let error = Object.create(err);
     error.message = err.message;
-    if (err.name === "CastError") error = handleCastErrorDB(error);
-    if (err.code === 11000) error = handleDuplicateFieldsDB(error);
-    if (err.name === "ValidationError") error = handleValidationErrorDB(error);
+    error.statusCode = err.statusCode;
+    error.status = err.status;
+
+    if (err.name === "CastError") error = handleCastErrorDB(err);
+    if (err.code === 11000) error = handleDuplicateFieldsDB(err);
+    if (err.name === "ValidationError") error = handleValidationErrorDB(err);
     if (err.name === "JsonWebTokenError") error = handleJWTError();
     if (err.name === "TokenExpiredError") error = handleJWTExpiredError();
 
