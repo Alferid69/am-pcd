@@ -16,7 +16,7 @@ import {
   markNotificationAsRead,
   markAllNotificationsAsRead,
   Notification,
-} from "../../api/apiNotifications";
+} from "../../services/apiNotifications";
 
 type DashboardHeaderProps = {
   welcomeLabel: string;

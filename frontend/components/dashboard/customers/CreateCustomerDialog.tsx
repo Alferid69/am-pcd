@@ -22,11 +22,11 @@ import {
   SelectValue,
 } from "../../ui/select";
 import { Input } from "../../ui/input";
-import { fetchWoredas } from "../../../api/apiWoredas";
+import { fetchWoredas } from "../../../services/apiWoredas";
 import type { CreateCustomerPayload } from "../types";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { createCustomer } from "@/api/apiCustomers";
+import { createCustomer } from "@/services/apiCustomers";
 import { useT } from "next-i18next/client";
 
 export default function CreateCustomerDialog() {

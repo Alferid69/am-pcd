@@ -3,7 +3,7 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useT } from "next-i18next/client";
-import { fetchStockRequests } from "../../../../api/apiStockRequests";
+import { fetchStockRequests } from "../../../../services/apiStockRequests";
 import RetailerRequestView from "../../../../components/dashboard/requests/RetailerRequestView";
 import ApproverRequestView from "../../../../components/dashboard/requests/ApproverRequestView";
 import { Package } from "lucide-react";

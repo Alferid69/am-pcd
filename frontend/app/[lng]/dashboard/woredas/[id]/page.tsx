@@ -12,7 +12,7 @@ import {
   ExternalLink,
   Mail,
 } from "lucide-react";
-import { fetchWoredaStats } from "../../../../../api/apiWoredas";
+import { fetchWoredaStats } from "../../../../../services/apiWoredas";
 import { Button } from "../../../../../components/ui/button";
 import {
   Card,

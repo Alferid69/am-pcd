@@ -23,8 +23,8 @@ import {
   SelectValue,
 } from "../../ui/select";
 import { Input } from "../../ui/input";
-import { createAllocation } from "../../../api/apiAllocations";
-import { fetchStockRequests } from "../../../api/apiStockRequests";
+import { createAllocation } from "../../../services/apiAllocations";
+import { fetchStockRequests } from "../../../services/apiStockRequests";
 import type { StockRequest } from "../types";
 
 export default function CreateAllocationDialog() {

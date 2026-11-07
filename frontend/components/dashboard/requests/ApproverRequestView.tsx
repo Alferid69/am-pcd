@@ -33,8 +33,8 @@ import {
 import { Textarea } from "../../ui/textarea";
 import type { StockRequest } from "../types";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import { updateStockRequestAction } from "../../../api/apiStockRequests";
-import { fetchRetailerPerformance } from "../../../api/apiRetailers";
+import { updateStockRequestAction } from "../../../services/apiStockRequests";
+import { fetchRetailerPerformance } from "../../../services/apiRetailers";
 import { useParams } from "next/navigation";
 
 interface ApproverRequestViewProps {

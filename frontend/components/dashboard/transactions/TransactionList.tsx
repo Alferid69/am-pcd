@@ -16,7 +16,7 @@ import {
   DollarSign,
   Download,
 } from "lucide-react";
-import { fetchRetailerTransactions } from "../../../api/apiTransactions";
+import { fetchRetailerTransactions } from "../../../services/apiTransactions";
 import type { Transaction } from "../../dashboard/types";
 import {
   Table,

@@ -5,10 +5,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Building2, ShieldAlert } from "lucide-react";
 import { useAuth } from "../../../../contexts/AuthContext";
 
-import { fetchWoredas, createWoredaOffice } from "../../../../api/apiWoredas";
-import { fetchRetailers, createRetailerCooperative } from "../../../../api/apiRetailers";
-import { getZones, createZoneTradeBureau } from "../../../../api/apiZones";
-import { getBureaus, createBureau } from "../../../../api/apiBureaus";
+import { fetchWoredas, createWoredaOffice } from "../../../../services/apiWoredas";
+import { fetchRetailers, createRetailerCooperative } from "../../../../services/apiRetailers";
+import { getZones, createZoneTradeBureau } from "../../../../services/apiZones";
+import { getBureaus, createBureau } from "../../../../services/apiBureaus";
 
 import { Button } from "../../../../components/ui/button";
 import {

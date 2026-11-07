@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { Store, Search, Filter, ArrowRight } from "lucide-react";
 import { useParams } from "next/navigation";
-import { fetchRetailers } from "../../../api/apiRetailers";
+import { fetchRetailers } from "../../../services/apiRetailers";
 import type { RetailerCooperative } from "../../dashboard/types";
 import { useAuth } from "../../../contexts/AuthContext";
 import {

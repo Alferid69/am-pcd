@@ -9,7 +9,7 @@ import {
   updateCommodity,
   deleteCommodity,
   Commodity,
-} from "../../../../api/apiCommodities";
+} from "../../../../services/apiCommodities";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { useT } from "next-i18next/client";
 

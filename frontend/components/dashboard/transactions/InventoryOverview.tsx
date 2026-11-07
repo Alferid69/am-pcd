@@ -3,7 +3,7 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Package, AlertTriangle } from "lucide-react";
-import { fetchRetailerById } from "../../../api/apiRetailers";
+import { fetchRetailerById } from "../../../services/apiRetailers";
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 import { Badge } from "../../ui/badge";
 import { useT } from "next-i18next/client";

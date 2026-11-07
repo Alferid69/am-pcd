@@ -17,8 +17,8 @@ import { useT } from "next-i18next/client";
 import {
   fetchCustomers,
   fetchCustomersByWoreda,
-} from "../../../api/apiCustomers";
-import { fetchWoredas } from "../../../api/apiWoredas";
+} from "../../../services/apiCustomers";
+import { fetchWoredas } from "../../../services/apiWoredas";
 import type { Customer } from "../types";
 import { useAuth } from "../../../contexts/AuthContext";
 import {

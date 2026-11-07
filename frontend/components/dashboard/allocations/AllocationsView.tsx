@@ -12,7 +12,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   fetchAllocations,
   updateAllocationStatus,
-} from "../../../api/apiAllocations";
+} from "../../../services/apiAllocations";
 import type { Allocation } from "../types";
 import { useAuth } from "../../../contexts/AuthContext";
 import {

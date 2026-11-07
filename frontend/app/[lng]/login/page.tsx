@@ -1,6 +1,6 @@
 "use client";
 
-import { login } from "@/api/apiAuth";
+import { login } from "@/services/apiAuth";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";

@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { MapPin, Search, ArrowRight, Building2 } from "lucide-react";
-import { fetchWoredas } from "../../../../api/apiWoredas";
+import { fetchWoredas } from "../../../../services/apiWoredas";
 import { useAuth } from "../../../../contexts/AuthContext";
 import {
   Table,

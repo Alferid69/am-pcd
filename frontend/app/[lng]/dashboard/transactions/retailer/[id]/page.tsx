@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Store } from "lucide-react";
 import TransactionList from "../../../../../../components/dashboard/transactions/TransactionList";
 import InventoryOverview from "../../../../../../components/dashboard/transactions/InventoryOverview";
-import { fetchRetailerById } from "../../../../../../api/apiRetailers";
+import { fetchRetailerById } from "../../../../../../services/apiRetailers";
 import { Button } from "../../../../../../components/ui/button";
 import { useT } from "next-i18next/client";
 

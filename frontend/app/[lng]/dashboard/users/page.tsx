@@ -9,11 +9,11 @@ import {
   updateUserAdmin,
   deleteUserAdmin,
   adminResetUserPassword,
-} from "../../../../api/apiUser";
-import { fetchWoredas } from "../../../../api/apiWoredas";
-import { fetchRetailers } from "../../../../api/apiRetailers";
-import { getZones } from "../../../../api/apiZones";
-import { getBureaus } from "../../../../api/apiBureaus";
+} from "../../../../services/apiUser";
+import { fetchWoredas } from "../../../../services/apiWoredas";
+import { fetchRetailers } from "../../../../services/apiRetailers";
+import { getZones } from "../../../../services/apiZones";
+import { getBureaus } from "../../../../services/apiBureaus";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { useT } from "next-i18next/client";
 

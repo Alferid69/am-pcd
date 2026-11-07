@@ -22,8 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../ui/select";
-import { fetchRetailerById } from "../../../api/apiRetailers";
-import { createTransaction } from "../../../api/apiTransactions";
+import { fetchRetailerById } from "../../../services/apiRetailers";
+import { createTransaction } from "../../../services/apiTransactions";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useT } from "next-i18next/client";
 

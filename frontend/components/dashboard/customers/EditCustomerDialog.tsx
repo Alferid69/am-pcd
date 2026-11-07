@@ -23,11 +23,11 @@ import {
   SelectValue,
 } from "../../ui/select";
 import { Input } from "../../ui/input";
-import { updateCustomer } from "../../../api/apiCustomers";
+import { updateCustomer } from "../../../services/apiCustomers";
 import type { Customer, CreateCustomerPayload } from "../types";
 import { useAuth } from "../../../contexts/AuthContext";
 
-import { fetchWoredas } from "../../../api/apiWoredas";
+import { fetchWoredas } from "../../../services/apiWoredas";
 import { useQuery } from "@tanstack/react-query";
 
 export default function EditCustomerDialog({ customer }: { customer: Customer }) {

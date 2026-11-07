@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useT } from "next-i18next/client";
 import { useAuth } from "../../../../contexts/AuthContext";
-import { updateProfile, updatePassword } from "../../../../api/apiUser";
+import { updateProfile, updatePassword } from "../../../../services/apiUser";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../../../components/ui/card";
 import { Input } from "../../../../components/ui/input";
 import { Button } from "../../../../components/ui/button";

@@ -35,8 +35,8 @@ import {
 } from "../../ui/select";
 import type { StockRequest } from "../types";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchCommodities, Commodity } from "../../../api/apiCommodities";
-import { createStockRequest, updateRequestItems } from "../../../api/apiStockRequests";
+import { fetchCommodities, Commodity } from "../../../services/apiCommodities";
+import { createStockRequest, updateRequestItems } from "../../../services/apiStockRequests";
 
 interface RetailerRequestViewProps {
   requests: StockRequest[];

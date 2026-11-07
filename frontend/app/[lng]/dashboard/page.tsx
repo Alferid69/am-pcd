@@ -17,7 +17,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useT } from "next-i18next/client";
-import { fetchOverviewStats } from "../../../api/apiOverview";
+import { fetchOverviewStats } from "../../../services/apiOverview";
 import { useAuth } from "../../../contexts/AuthContext";
 import {
   Card,
