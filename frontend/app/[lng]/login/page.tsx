@@ -90,11 +90,8 @@ export default function LoginPage() {
         </div>
       )}
 
-      {/* Decorative Background Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-indigo-500/20 blur-[120px] rounded-full pointer-events-none" />
-
-      {/* Glassmorphic Card */}
-      <div className="relative z-10 w-full max-w-md backdrop-blur-xl bg-white/60 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-8 shadow-2xl transition-all">
+      {/* Login Card */}
+      <div className="relative z-10 w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 shadow-sm transition-all">
         <div className="text-center mb-8 flex flex-col items-center">
           <div className="mb-4 rounded-full overflow-hidden bg-white dark:bg-white p-1 ring-1 ring-slate-200 dark:ring-white/10 flex items-center justify-center h-18 w-18">
             <Image
@@ -106,7 +103,7 @@ export default function LoginPage() {
               unoptimized
             />
           </div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-1.5 tracking-tight">
             {t("loginTitle")}
           </h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm">
@@ -115,12 +112,12 @@ export default function LoginPage() {
         </div>
 
         {error && (
-          <div className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium">
+          <div className="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 dark:text-red-400 text-sm font-medium">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleLogin} className="space-y-6">
+        <form onSubmit={handleLogin} className="space-y-5">
           <div className="space-y-1.5">
             <label
               className="text-sm font-medium text-slate-700 dark:text-slate-300"
@@ -134,7 +131,7 @@ export default function LoginPage() {
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full bg-white dark:bg-slate-900/50 border border-slate-300 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all shadow-sm"
+              className="w-full bg-white dark:bg-slate-800/60 border border-slate-300 dark:border-slate-700 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all shadow-xs text-sm"
               placeholder={t("usernamePlaceholder")}
             />
           </div>
@@ -152,7 +149,7 @@ export default function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-white dark:bg-slate-900/50 border border-slate-300 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all shadow-sm"
+              className="w-full bg-white dark:bg-slate-800/60 border border-slate-300 dark:border-slate-700 rounded-lg px-4 py-2.5 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all shadow-xs text-sm"
               placeholder={t("passwordPlaceholder")}
             />
           </div>
@@ -160,17 +157,17 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loginMutation.isPending}
-            className={`w-full py-3.5 px-4 rounded-xl font-medium text-white shadow-lg transition-all 
+            className={`w-full py-3 px-4 rounded-lg font-semibold text-white shadow-xs transition-colors text-sm
               ${
                 loginMutation.isPending
-                  ? "bg-indigo-600/50 cursor-not-allowed"
-                  : "bg-linear-to-r from-indigo-500 to-purple-600 hover:scale-[1.02] hover:shadow-indigo-500/25 active:scale-[0.98]"
+                  ? "bg-blue-600/50 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700 active:bg-blue-800"
               }`}
           >
             {loginMutation.isPending ? (
               <span className="flex items-center justify-center gap-2">
                 <svg
-                  className="animate-spin h-5 w-5 text-white"
+                  className="animate-spin h-4 w-4 text-white"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -200,7 +197,7 @@ export default function LoginPage() {
         <div className="mt-6 text-center">
           <Link
             href={`/${pathname?.split("/")[1] || "en"}/forgot-password`}
-            className="text-sm text-slate-500 dark:text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors"
+            className="text-xs text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
           >
             {t("forgotPasswordLink")}
           </Link>
