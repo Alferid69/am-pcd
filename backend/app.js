@@ -6,6 +6,7 @@ const cookieParser = require("cookie-parser");
 const hpp = require('hpp');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
+const mongoose = require("mongoose");
 
 // Express 5 makes req.query getter-only by default, which throws:
 // "Cannot set property query of #<IncomingMessage> which has only a getter"
@@ -91,10 +92,24 @@ app.use("/api/v1/transactions", transactionsRouter);
 app.use("/api/v1/overview", overviewRouter);
 
 // Health check and root ping endpoints for monitoring and self-ping
-app.get(["/", "/health", "/api/v1/health"], (req, res) => {
-  res.status(200).json({
-    status: "success",
+app.get(["/", "/health", "/api/v1/health"], async (req, res) => {
+  let dbStatus = "disconnected";
+  try {
+    if (mongoose.connection && mongoose.connection.readyState === 1) {
+      await mongoose.connection.db.command({ ping: 1 });
+      dbStatus = "connected";
+    } else {
+      dbStatus = `connecting (readyState: ${mongoose.connection.readyState})`;
+    }
+  } catch (err) {
+    dbStatus = `error: ${err.message}`;
+  }
+
+  const isHealthy = dbStatus === "connected";
+  res.status(isHealthy ? 200 : 503).json({
+    status: isHealthy ? "success" : "degraded",
     message: "am-pcd backend API is running",
+    database: dbStatus,
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
   });

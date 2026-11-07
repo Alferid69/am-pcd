@@ -22,7 +22,8 @@ function initSelfPing() {
   setInterval(async () => {
     try {
       const res = await fetch(pingUrl);
-      console.log(`[Self-Ping] Ping sent to ${pingUrl} (Status: ${res.status})`);
+      const data = await res.json().catch(() => ({}));
+      console.log(`[Self-Ping] Ping sent to ${pingUrl} (Status: ${res.status}, DB: ${data.database || "unknown"})`);
     } catch (err) {
       console.warn(`[Self-Ping] Warning: Failed to ping ${pingUrl}:`, err.message);
     }
