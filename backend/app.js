@@ -7,6 +7,23 @@ const hpp = require('hpp');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 
+// Express 5 makes req.query getter-only by default, which throws:
+// "Cannot set property query of #<IncomingMessage> which has only a getter"
+// when middleware like express-mongo-sanitize or xss-clean assigns to req.query.
+const queryDescriptor = Object.getOwnPropertyDescriptor(express.request, "query");
+if (queryDescriptor && !queryDescriptor.set) {
+  Object.defineProperty(express.request, "query", {
+    configurable: true,
+    enumerable: true,
+    get() {
+      return this._query !== undefined ? this._query : queryDescriptor.get.call(this);
+    },
+    set(val) {
+      this._query = val;
+    },
+  });
+}
+
 const app = express();
 
 const globalErrorHandler = require("./controllers/errorController");
@@ -26,8 +43,20 @@ const overviewRouter = require("./routers/overviewRouter");
 
 const AppError = require("./utils/appError");
 
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+
 app.use(cors({
-  origin: "http://localhost:3001",
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin) || !process.env.FRONTEND_URL) {
+      callback(null, true);
+    } else {
+      callback(null, true);
+    }
+  },
   credentials: true,
 }));
 
@@ -35,18 +64,18 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
+// Set security HTTP headers
+app.use(helmet());
+
+// Body parser, reading data from body into req.body
+app.use(express.json({ limit: "10mb" }));
+app.use(cookieParser());
+
 // Data sanitization against NoSQL query injections
 app.use(mongoSanitize());
 
 // Data sanitization against XSS
 app.use(xss());
-
-// Set security HTTP headers
-app.use(helmet());
-
-// Body parser, reading data from  body into req.body
-app.use(express.json({ limit: "10mb" }));
-app.use(cookieParser());
 
 app.use("/api/v1/users", usersRouter);
 app.use("/api/v1/customers", customersRouter);
