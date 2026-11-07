@@ -62,6 +62,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
       });
     } catch (error) {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("jwt");
+      }
       setState({
         ...defaultState,
         isLoading: false,
@@ -79,6 +82,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [fetchUser]);
 
   const login = useCallback((data: any) => {
+    if (data?.token && typeof window !== "undefined") {
+      localStorage.setItem("jwt", data.token);
+    }
     const user = data.data.user;
     const role = isRoleKey(user.role) ? user.role : "retailer";
     
@@ -103,6 +109,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (e) {
       console.error("Logout failed", e);
     } finally {
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("jwt");
+      }
       const currentLng = window.location.pathname.split("/")[1] || "en";
       setState({
         ...defaultState,

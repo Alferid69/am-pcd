@@ -5,6 +5,17 @@ const api = axios.create({
   withCredentials: true,
 });
 
+// Attach Authorization header if JWT token is stored in localStorage
+api.interceptors.request.use((config) => {
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("jwt");
+    if (token && !config.headers.Authorization) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+  return config;
+});
+
 // Response interceptor to handle session expiration
 api.interceptors.response.use(
   (response) => response,

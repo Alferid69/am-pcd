@@ -44,17 +44,16 @@ const signToken = (user) => {
 const createSendToken = (user, statusCode, res) => {
   const token = signToken(user);
 
+  const isProduction = process.env.NODE_ENV === "production";
   const cookieOptions = {
-    expires: new Date(
-      Date.now() + 7 * 24 * 60 * 60 * 1000
-    ),
-    // expires: new Date(new Date().getTime() + 1000 * 60), // 1 minute for testing
+    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     httpOnly: true,
-    secure: true, // false in development
-    sameSite: "Lax",
+    // On HTTPS / production: secure must be true, sameSite must be "none" for cross-origin frontend
+    // On HTTP / localhost development: secure must be false, sameSite can be "lax"
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
   };
 
-  // if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
   res.cookie("jwt", token, cookieOptions);
 
   user.password = undefined;
@@ -88,14 +87,15 @@ exports.login = catchAsync(async (req, res, next) => {
 });
 
 exports.logout = (req, res) => {
-  res.cookie('jwt', 'logged out', {
+  const isProduction = process.env.NODE_ENV === "production";
+  res.cookie("jwt", "logged out", {
     expires: new Date(Date.now() - 10 * 1000), // Set to a date in the past
     httpOnly: true,
-    secure: true, // Must match the original cookie's secure flag
-    sameSite: 'Lax',
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
   });
   res.status(200).json({
-    status: 'success',
+    status: "success",
   });
 };
 
