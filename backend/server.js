@@ -13,6 +13,7 @@ try {
 dotenv.config({ path: path.join(__dirname, ".env") });
 
 const app = require("./app");
+const initSelfPing = require("./utils/selfPing");
 
 const uri = process.env.DATABASE_URL.replace(
   "<PASSWORD>",
@@ -27,6 +28,7 @@ mongoose
 
     app.listen(port, "0.0.0.0", () => {
       console.log(`Server is running on port ${port}`);
+      initSelfPing();
     });
   })
   .catch((err) => {

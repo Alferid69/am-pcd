@@ -90,6 +90,16 @@ app.use("/api/v1/allocations", allocationsRouter);
 app.use("/api/v1/transactions", transactionsRouter);
 app.use("/api/v1/overview", overviewRouter);
 
+// Health check and root ping endpoints for monitoring and self-ping
+app.get(["/", "/health", "/api/v1/health"], (req, res) => {
+  res.status(200).json({
+    status: "success",
+    message: "am-pcd backend API is running",
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+  });
+});
+
 app.all(/.*/, (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
 });
